@@ -1,25 +1,31 @@
-import { useEffect } from 'react'
-import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from 'wagmi'
-import { truncateAddress } from '../lib/format'
-import { detectMiniPay } from '../lib/minipay'
-import { activeChain } from '../lib/chains'
+import { useEffect } from "react";
+import {
+  useConnect,
+  useChainId,
+  useConnection,
+  useConnections,
+  useChains,
+} from "wagmi";
+import { truncateAddress } from "../lib/format";
+import { detectMiniPay } from "../lib/minipay";
+import { activeChain } from "../lib/chains";
 
 export default function WalletBadge() {
-  const { address, isConnected } = useAccount()
-  const { connect, connectors, isPending } = useConnect()
-  const { disconnect } = useDisconnect()
-  const chainId = useChainId()
-  const { switchChain } = useSwitchChain()
+  const { address, isConnected } = useConnection();
+  const connect = useConnect();
+  const connections = useConnections();
+  const chainId = useChainId();
+  const switchChain = useChains();
 
   // Auto-connect when running inside the MiniPay in-app browser.
   useEffect(() => {
     if (!isConnected && detectMiniPay()) {
-      const injectedConnector = connectors.find((c) => c.type === 'injected')
+      const injectedConnector = connectors.find((c) => c.type === "injected");
       if (injectedConnector) {
-        void connect({ connector: injectedConnector })
+        void connect({ connector: injectedConnector });
       }
     }
-  }, [isConnected, connectors, connect])
+  }, [isConnected, connectors, connect]);
 
   if (!isConnected || !address) {
     return (
@@ -28,20 +34,36 @@ export default function WalletBadge() {
         className="btn-primary"
         disabled={isPending}
         onClick={() => {
-          const injectedConnector = connectors.find((c) => c.type === 'injected')
+          // Prefer a real injected wallet (MetaMask / MiniPay).
+          const injectedConnector = connectors.find(
+            (c) => c.type === "injected" && (c as any).ready !== false,
+          );
           if (injectedConnector) {
-            connect({ connector: injectedConnector })
-          } else if (connectors[0]) {
-            connect({ connector: connectors[0] })
+            connect({ connector: injectedConnector });
+            return;
+          }
+
+          // Fall back to WalletConnect (shows QR code modal).
+          const wcConnector = connectors.find(
+            (c) => c.type === "walletConnect",
+          );
+          if (wcConnector) {
+            connect({ connector: wcConnector });
+            return;
+          }
+
+          // Last resort: try the first available connector.
+          if (connectors[0]) {
+            connect({ connector: connectors[0] });
           }
         }}
       >
-        {isPending ? 'Connecting…' : 'Connect wallet'}
+        {isPending ? "Connecting…" : "Connect wallet"}
       </button>
-    )
+    );
   }
 
-  const wrongNetwork = chainId !== activeChain.id
+  const wrongNetwork = chainId !== activeChain.id;
 
   if (wrongNetwork) {
     return (
@@ -52,7 +74,7 @@ export default function WalletBadge() {
       >
         Switch to {activeChain.name}
       </button>
-    )
+    );
   }
 
   return (
@@ -71,5 +93,5 @@ export default function WalletBadge() {
         ⎋
       </button>
     </div>
-  )
+  );
 }

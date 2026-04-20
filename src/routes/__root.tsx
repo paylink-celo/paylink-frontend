@@ -1,4 +1,4 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Link, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import ChatDrawer from '../components/ChatDrawer'
@@ -8,7 +8,21 @@ import Providers from '../components/Providers'
 
 import appCss from '../styles.css?url'
 
+function NotFound() {
+  return (
+    <main className="page-wrap flex flex-col items-center justify-center gap-4 py-24 text-center">
+      <span className="text-6xl">🔍</span>
+      <h1 className="text-2xl font-bold text-[var(--sea-ink)]">Page not found</h1>
+      <p className="text-[var(--sub)]">The page you're looking for doesn't exist or has been moved.</p>
+      <Link to="/" className="btn-primary mt-2">
+        Back to Home
+      </Link>
+    </main>
+  )
+}
+
 export const Route = createRootRoute({
+  notFoundComponent: NotFound,
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
