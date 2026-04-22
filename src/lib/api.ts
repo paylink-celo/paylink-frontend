@@ -67,6 +67,75 @@ export function x402PayUrl(vault: string): string {
   return `${backendUrl}/api/invoice/${vault}/pay`
 }
 
+/** Parsed x402 discovery response (HTTP 402 headers). */
+export type X402Requirements = {
+  amount: bigint
+  currency: string
+  token: `0x${string}`
+  recipient: `0x${string}`
+  chainId: number
+  scheme: string
+}
+
+/**
+ * Perform the `GET /api/invoice/:vault/pay` discovery call.
+ *
+ * The backend responds with `HTTP 402` plus `X-Payment-*` headers that
+ * describe the EIP-3009 authorization the client must sign.
+ */
+export async function getX402Requirements(vault: string): Promise<X402Requirements> {
+  const res = await backendFetch(`/api/invoice/${vault}/pay`)
+  const amount = res.headers.get('X-Payment-Amount')
+  const token = res.headers.get('X-Payment-Token')
+  const recipient = res.headers.get('X-Payment-Recipient')
+  const chain = res.headers.get('X-Payment-Chain')
+  const scheme = res.headers.get('X-Payment-Scheme') ?? 'eip-3009'
+  const currency = res.headers.get('X-Payment-Currency') ?? ''
+  if (!amount || !token || !recipient || !chain) {
+    throw new Error('Missing X-Payment-* headers from x402 discovery')
+  }
+  const chainId = Number(chain.split(':').pop())
+  if (!Number.isFinite(chainId) || chainId <= 0) {
+    throw new Error(`Invalid X-Payment-Chain: ${chain}`)
+  }
+  return {
+    amount: BigInt(amount),
+    currency,
+    token: token as `0x${string}`,
+    recipient: recipient as `0x${string}`,
+    chainId,
+    scheme,
+  }
+}
+
+export type X402AuthPayload = {
+  from: `0x${string}`
+  value: string
+  validAfter: string
+  validBefore: string
+  nonce: `0x${string}`
+  v: number
+  r: `0x${string}`
+  s: `0x${string}`
+}
+
+export type X402RelayResult = {
+  txHash: `0x${string}`
+  explorer?: string
+}
+
+/** Submit a signed EIP-3009 authorization. Backend relays `x402Pay()`. */
+export function postX402Payment(
+  vault: string,
+  payload: X402AuthPayload,
+): Promise<X402RelayResult> {
+  return requestJson<X402RelayResult>(`/api/invoice/${vault}/pay`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
 /* ---------- Metadata pinning ---------- */
 
 export type PinResult = {

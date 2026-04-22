@@ -1,21 +1,16 @@
 import { useState } from 'react'
-import {
-  useChainId,
-  useConnection,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from 'wagmi'
+import { useChainId, useConnection } from 'wagmi'
 import { toast } from 'sonner'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { InvoiceFactoryAbi } from '@/lib/abis/factory-abi'
+import { useUserTokenBalance, TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
+import { useRequestInvoice } from '@/hooks/mutation/use-request-invoice'
 import { getAddresses } from '@/lib/addresses/addresses'
 import { parseAmount } from '@/lib/format'
 import { resolveRecipient } from '@/lib/api'
-import { useUserTokenBalance, TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
 
 import { buildMetadataURI } from '../shared/build-metadata-uri'
 import { DuePicker } from '../shared/due-picker'
@@ -39,8 +34,9 @@ export function PullForm({ prefill }: { prefill?: AiDraft }) {
 
   const { userTokenBalanceFormatted } = useUserTokenBalance(token, TOKEN_DECIMALS[token])
 
-  const { data: hash, writeContract, isPending } = useWriteContract()
-  const { isLoading: isMining, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { status: txStatus, mutation } = useRequestInvoice()
+  const busy = txStatus === 'loading' || txStatus === 'confirming'
+  const isSuccess = txStatus === 'success'
 
   async function submit() {
     const result = {
@@ -75,21 +71,20 @@ export function PullForm({ prefill }: { prefill?: AiDraft }) {
       dueDateIso: due,
     })
 
-    writeContract({
-      abi: InvoiceFactoryAbi,
-      address: addrs.factory as `0x${string}`,
-      functionName: 'requestInvoice',
-      args: [resolvedCounterparty, parseAmount(amount), encoded],
+    mutation.mutate({
+      factory: addrs.factory as `0x${string}`,
+      counterparty: resolvedCounterparty,
+      amount: parseAmount(amount),
+      notes: encoded,
     })
-    toast.info('Submitting request\u2026')
   }
 
   if (isSuccess) {
     return (
       <Card className="form-card">
-        <CardContent className="px-5 py-5">
+        <CardContent >
           <h3 className="mb-2 text-lg font-semibold">Request sent ✓</h3>
-          <p className="mb-4 text-sm text-[var(--sea-ink-soft)]">
+          <p className="mb-4 text-sm text-(--sea-ink-soft)">
             The counterparty will see your request in their Requests inbox.
           </p>
           <a className="btn-secondary" href="/activity">
@@ -103,7 +98,7 @@ export function PullForm({ prefill }: { prefill?: AiDraft }) {
   return (
     <>
       <Card className="form-card">
-        <CardContent className="grid gap-4 px-5 py-5">
+        <CardContent className="grid gap-4 p-0">
           <div>
             <Label htmlFor="pull-counterparty" className="field-label mb-2">
               Payer wallet
@@ -164,8 +159,8 @@ export function PullForm({ prefill }: { prefill?: AiDraft }) {
       </Card>
 
       <FormFooter feeLabel={`Estimated Fee: < 0.01 ${token}`}>
-        <button className="btn-primary w-full" onClick={submit} disabled={isPending || isMining}>
-          {isPending ? 'Confirm in wallet\u2026' : isMining ? 'Confirming\u2026' : 'Create invoice'}
+        <button className="btn-primary w-full" onClick={submit} disabled={busy}>
+          {busy ? 'Processing\u2026' : 'Create invoice'}
         </button>
       </FormFooter>
     </>

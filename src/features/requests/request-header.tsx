@@ -38,13 +38,13 @@ export function RequestHeader({
           <Arrow size={14} />
           {label}
         </p>
-        <p className="mt-1 m-0 text-base font-bold text-[var(--sea-ink)]">{name}</p>
-        <p className="mt-0.5 m-0 text-sm text-[var(--sea-ink-soft)] line-clamp-1">
+        <p className="mt-1 m-0 text-base font-bold text-(--sea-ink)">{name}</p>
+        <p className="mt-0.5 m-0 text-sm text-(--sea-ink-soft) line-clamp-1">
           {truncatedSubtitle}
         </p>
       </div>
       <div className="shrink-0 text-right">
-        <p className="m-0 text-xl font-extrabold text-[var(--sea-ink)] leading-none">
+        <p className="m-0 text-xl font-extrabold text-(--sea-ink) leading-none">
           ${formatAmount(amount)}
         </p>
       </div>

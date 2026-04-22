@@ -30,25 +30,26 @@ export function SplashScreen({ isReady }: SplashScreenProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--bg-base)] transition-opacity duration-500 ${
+      className={`fixed inset-0 z-100 flex flex-col items-center justify-center bg-(--bg-base) transition-opacity duration-500 ${
         fadeOut ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      PayLink branding
-      <div className="flex items-center gap-3">
-        <span className="h-4 w-4 rounded-full bg-[linear-gradient(90deg,#38A191,#B2DFDB)]" />
-        <span className="text-2xl font-bold text-[var(--sea-ink)]">PayLink</span>
-      </div>
-      <p className="mt-2 text-xs text-[var(--sea-ink-soft)]">On-chain billing for MiniPay</p>
+      {/* PayLink branding */}
+      <img
+        src="/paylink-light.png"
+        alt="PayLink"
+        className="h-20 w-auto object-contain drop-shadow-[0_6px_18px_rgba(30,90,72,0.18)] rounded-full"
+      />
+      <p className="mt-3 text-xs text-(--sea-ink-soft)">On-chain billing for MiniPay</p>
 
       {/* Loading indicator */}
       <div className="mt-8 flex flex-col items-center gap-3">
         <div className="flex gap-1.5">
-          <span className="size-2 rounded-full bg-[var(--lagoon)] animate-bounce [animation-delay:0ms]" />
-          <span className="size-2 rounded-full bg-[var(--lagoon)] animate-bounce [animation-delay:150ms]" />
-          <span className="size-2 rounded-full bg-[var(--lagoon)] animate-bounce [animation-delay:300ms]" />
+          <span className="size-2 rounded-full bg-(--lagoon) animate-bounce [animation-delay:0ms]" />
+          <span className="size-2 rounded-full bg-(--lagoon) animate-bounce [animation-delay:150ms]" />
+          <span className="size-2 rounded-full bg-(--lagoon) animate-bounce [animation-delay:300ms]" />
         </div>
-        <p className="text-xs text-[var(--sea-ink-soft)]">
+        <p className="text-xs text-(--sea-ink-soft)">
           {isReady ? 'Ready' : 'Connecting wallet...'}
         </p>
       </div>

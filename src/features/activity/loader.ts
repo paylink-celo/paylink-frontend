@@ -1,5 +1,6 @@
 import type { Abi, PublicClient } from 'viem'
-import { InvoiceFactoryAbi, InvoiceVaultAbi } from '@/lib/abis/factory-abi'
+import { InvoiceFactoryAbi } from '@/lib/abis/factory-abi'
+import { InvoiceVaultAbi } from '@/lib/abis/invoice-vault-abi'
 
 import type { Invoice } from './types'
 

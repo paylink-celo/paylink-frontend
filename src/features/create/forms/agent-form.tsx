@@ -1,20 +1,15 @@
 import { useState } from 'react'
-import {
-  useChainId,
-  useConnection,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from 'wagmi'
+import { useChainId, useConnection } from 'wagmi'
 import { toast } from 'sonner'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { InvoiceFactoryAbi } from '@/lib/abis/factory-abi'
+import { useUserTokenBalance, TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
+import { useCreateInvoice } from '@/hooks/mutation/use-create-invoice'
 import { getAddresses } from '@/lib/addresses/addresses'
 import { parseAmount } from '@/lib/format'
-import { useUserTokenBalance, TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
 
 import { buildMetadataURI } from '../shared/build-metadata-uri'
 import { FormFooter } from '../shared/form-bits'
@@ -35,8 +30,9 @@ export function AgentForm() {
 
   const { userTokenBalanceFormatted } = useUserTokenBalance(token, TOKEN_DECIMALS[token])
 
-  const { data: hash, writeContract, isPending } = useWriteContract()
-  const { isLoading: isMining, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { status: txStatus, mutation } = useCreateInvoice()
+  const busy = txStatus === 'loading' || txStatus === 'confirming'
+  const isSuccess = txStatus === 'success'
 
   async function submit() {
     if (!amountZ.safeParse(amount).success) return toast.error('Invalid amount')
@@ -53,21 +49,16 @@ export function AgentForm() {
       extra: { endpoint: endpoint || undefined },
     })
 
-    writeContract({
-      abi: InvoiceFactoryAbi,
-      address: addrs.factory as `0x${string}`,
-      functionName: 'createInvoice',
-      args: [
-        (token === 'cUSD' ? addrs.cUSD : addrs.USDT) as `0x${string}`,
-        amt,
-        dueTs,
-        meta,
-        true, // open payment — any agent can pay
-        [],
-        [],
-      ],
+    mutation.mutate({
+      factory: addrs.factory as `0x${string}`,
+      token: (token === 'cUSD' ? addrs.cUSD : addrs.USDT) as `0x${string}`,
+      totalAmount: amt,
+      dueDate: dueTs,
+      metadataURI: meta,
+      isOpenPayment: true, // open payment — any agent can pay
+      allowedPayers: [],
+      payerAmounts: [],
     })
-    toast.info('Submitting transaction\u2026')
   }
 
   if (isSuccess) {
@@ -149,8 +140,8 @@ export function AgentForm() {
       </Card>
 
       <FormFooter feeLabel={`Estimated Fee: < 0.01 ${token}`}>
-        <button className="btn-primary w-full" onClick={submit} disabled={isPending || isMining}>
-          {isPending ? 'Confirm in wallet\u2026' : isMining ? 'Mining\u2026' : 'Create agent invoice'}
+        <button className="btn-primary w-full" onClick={submit} disabled={busy}>
+          {busy ? 'Processing\u2026' : 'Create agent invoice'}
         </button>
       </FormFooter>
     </>

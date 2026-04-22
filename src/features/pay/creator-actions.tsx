@@ -1,40 +1,28 @@
 import { useEffect } from 'react'
-import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
-import type { Abi } from 'viem'
-import { toast } from 'sonner'
 
-import { InvoiceVaultAbi } from '@/lib/abis/factory-abi'
+import { useVaultRelease, useVaultCancel } from '@/hooks/mutation/use-vault-actions'
 import { statusLabel } from '@/lib/format'
 
 export function CreatorActions({
   vaultAddr,
-  status,
+  status: invoiceStatus,
   onDone,
 }: {
   vaultAddr: `0x${string}`
   status: number
   onDone: () => void
 }) {
-  const { data: releaseHash, writeContract: doRelease, isPending } = useWriteContract()
-  const { isSuccess, isLoading } = useWaitForTransactionReceipt({ hash: releaseHash })
-  const { data: cancelHash, writeContract: doCancel, isPending: cancelling } = useWriteContract()
-  const { isSuccess: cancelled } = useWaitForTransactionReceipt({ hash: cancelHash })
+  const release = useVaultRelease()
+  const cancel = useVaultCancel()
 
   useEffect(() => {
-    if (isSuccess) {
-      toast.success('Released \u2713')
-      onDone()
-    }
-  }, [isSuccess, onDone])
-  useEffect(() => {
-    if (cancelled) {
-      toast.success('Cancelled')
-      onDone()
-    }
-  }, [cancelled, onDone])
+    if (release.status === 'success' || cancel.status === 'success') onDone()
+  }, [release.status, cancel.status, onDone])
 
-  const canRelease = status === 1 || status === 2
-  const canCancel = status === 0
+  const canRelease = invoiceStatus === 1 || invoiceStatus === 2
+  const canCancel = invoiceStatus === 0
+  const busyRelease = release.status === 'loading' || release.status === 'confirming'
+  const busyCancel = cancel.status === 'loading' || cancel.status === 'confirming'
 
   return (
     <section className="island-shell rounded-2xl p-5">
@@ -42,34 +30,22 @@ export function CreatorActions({
       <div className="flex flex-wrap gap-3">
         <button
           className="btn-primary flex-1"
-          disabled={!canRelease || isPending || isLoading}
-          onClick={() =>
-            doRelease({
-              abi: InvoiceVaultAbi as Abi,
-              address: vaultAddr,
-              functionName: 'release',
-            })
-          }
+          disabled={!canRelease || busyRelease}
+          onClick={() => release.mutation.mutate(vaultAddr)}
         >
-          {isLoading ? 'Releasing\u2026' : 'Release funds'}
+          {busyRelease ? 'Releasing\u2026' : 'Release funds'}
         </button>
         <button
           className="btn-ghost flex-1"
-          disabled={!canCancel || cancelling}
-          onClick={() =>
-            doCancel({
-              abi: InvoiceVaultAbi as Abi,
-              address: vaultAddr,
-              functionName: 'cancel',
-            })
-          }
+          disabled={!canCancel || busyCancel}
+          onClick={() => cancel.mutation.mutate(vaultAddr)}
         >
           Cancel
         </button>
       </div>
       {!canRelease && !canCancel && (
         <p className="mt-3 text-sm text-[var(--sea-ink-soft)]">
-          No actions available for current status: {statusLabel(status)}.
+          No actions available for current status: {statusLabel(invoiceStatus)}.
         </p>
       )}
     </section>

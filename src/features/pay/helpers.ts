@@ -18,6 +18,12 @@ export function humanizeEvent(type: string): string {
     case 'X402PaymentReceived': return 'Agent paid via x402'
     case 'Cancelled': return 'Invoice cancelled'
     case 'Created': return 'Invoice created'
+    case 'InvoiceDeclined': return 'Payer declined invoice'
+    case 'Disputed': return 'Invoice disputed'
+    case 'Expired': return 'Invoice expired'
+    case 'DelegateSet': return 'Delegate payer set'
+    case 'PayerAdded': return 'Payer added'
+    case 'OpenPaymentChanged': return 'Open-payment toggled'
     default: return type
   }
 }
