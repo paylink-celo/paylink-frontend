@@ -1,6 +1,5 @@
 import StatusBadge from '@/components/status-badge'
 import { formatAmount, formatDate, truncateAddress } from '@/lib/format'
-
 import { tokenLabel } from './helpers'
 
 export function InvoiceHeader({
@@ -19,10 +18,10 @@ export function InvoiceHeader({
   return (
     <header className="mb-5">
       <p className="island-kicker mb-1">Invoice</p>
-      <h1 className="display-title text-2xl font-bold text-[var(--sea-ink)]">
+      <h1 className="display-title text-2xl font-bold text-(--sea-ink)">
         {formatAmount(totalAmount)} {tokenLabel(tokenAddr)}
       </h1>
-      <p className="mt-1 text-sm text-[var(--sea-ink-soft)]">
+      <p className="mt-1 text-sm text-(--sea-ink-soft)">
         From {creator ? truncateAddress(creator) : '—'} · Due {formatDate(dueDate)}
       </p>
       <div className="mt-2">

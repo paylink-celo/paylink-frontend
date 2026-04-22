@@ -28,7 +28,44 @@ export type SgInvoiceRequest = {
   notes: string
   fulfilled: boolean
   createdAt: string
+  rejected: boolean
+  rejectedAt: string | null
+  rejectReason: string | null
+  rejectedBy: `0x${string}` | null
   fulfilledInvoice: { vault: `0x${string}` } | null
+}
+
+export type SgPolicySetting = {
+  id: string
+  payer: `0x${string}`
+  maxPerTx: string
+  maxPerDay: string
+  expiresAt: string
+  minReputation: number
+  useWhitelist: boolean
+  active: boolean
+  dayStart: string
+  spentToday: string
+  updatedAt: string
+}
+
+export type SgCreatorPermission = {
+  id: string
+  payer: `0x${string}`
+  creator: `0x${string}`
+  allowed: boolean
+  blocked: boolean
+  updatedAt: string
+}
+
+export type SgPolicySpend = {
+  id: string
+  payer: `0x${string}`
+  creator: `0x${string}`
+  amount: string
+  spentTodayAfter: string
+  timestamp: string
+  txHash: `0x${string}`
 }
 
 const STATUS_MAP: Record<SgInvoice['status'], number> = {

@@ -1,10 +1,6 @@
 import { useEffect } from 'react'
-import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
-import type { Abi } from 'viem'
-import { toast } from 'sonner'
 
-import { InvoiceVaultAbi } from '@/lib/abis/factory-abi'
-
+import { useVaultRefund } from '@/hooks/mutation/use-vault-actions'
 import { Banner } from './banner'
 
 export function RefundActions({
@@ -16,19 +12,18 @@ export function RefundActions({
   hasStake: boolean
   onDone: () => void
 }) {
-  const { data: hash, writeContract, isPending } = useWriteContract()
-  const { isSuccess, isLoading } = useWaitForTransactionReceipt({ hash })
+  const { status, mutation } = useVaultRefund()
 
   useEffect(() => {
-    if (isSuccess) {
-      toast.success('Refunded \u2713')
-      onDone()
-    }
-  }, [isSuccess, onDone])
+    if (status === 'success') onDone()
+  }, [status, onDone])
 
   if (!hasStake) {
     return <Banner kind="info" title="Expired" body="This invoice is expired. No action needed." />
   }
+
+  const busy = status === 'loading' || status === 'confirming'
+
   return (
     <section className="island-shell rounded-2xl p-5">
       <p className="island-kicker mb-2">Expired</p>
@@ -37,16 +32,10 @@ export function RefundActions({
       </p>
       <button
         className="btn-primary w-full"
-        disabled={isPending || isLoading}
-        onClick={() =>
-          writeContract({
-            abi: InvoiceVaultAbi as Abi,
-            address: vaultAddr,
-            functionName: 'refund',
-          })
-        }
+        disabled={busy}
+        onClick={() => mutation.mutate(vaultAddr)}
       >
-        {isLoading ? 'Refunding\u2026' : 'Refund my deposit'}
+        {busy ? 'Refunding\u2026' : 'Refund my deposit'}
       </button>
     </section>
   )

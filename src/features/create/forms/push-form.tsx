@@ -1,29 +1,23 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import {
-  useChainId,
-  useConnection,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from 'wagmi'
+import { useChainId, useConnection } from 'wagmi'
 import { toast } from 'sonner'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { InvoiceFactoryAbi } from '@/lib/abis/factory-abi'
+import { useUserTokenBalance, TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
+import { useCreateInvoice } from '@/hooks/mutation/use-create-invoice'
 import { getAddresses } from '@/lib/addresses/addresses'
 import { parseAmount } from '@/lib/format'
 import { resolveRecipient } from '@/lib/api'
-import { useUserTokenBalance, TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
 
 import { buildMetadataURI } from '../shared/build-metadata-uri'
 import { DuePicker } from '../shared/due-picker'
 import { ErrorText, FormFooter, PayerWalletInput } from '../shared/form-bits'
 import { SOFT_INPUT, SOFT_TEXTAREA } from '../shared/styles'
 import { TokenSelect } from '../shared/token-select'
-import { useExtractVaultAndRedirect } from '../shared/use-extract-vault-and-redirect'
 import { amountZ, dueZ, recipientZ } from '../shared/validators'
 import type { AiDraft, TokenSymbol } from '../shared/types'
 
@@ -42,9 +36,15 @@ export function PushForm({ prefill }: { prefill?: AiDraft }) {
 
   const { userTokenBalanceFormatted } = useUserTokenBalance(token, TOKEN_DECIMALS[token])
 
-  const { data: hash, writeContract, isPending } = useWriteContract()
-  const { data: receipt, isLoading: isMining } = useWaitForTransactionReceipt({ hash })
-  useExtractVaultAndRedirect(receipt, navigate)
+  const { status: txStatus, mutation, vaultAddr: createdVault } = useCreateInvoice()
+  const busy = txStatus === 'loading' || txStatus === 'confirming'
+
+  // Redirect to vault on success
+  useEffect(() => {
+    if (txStatus === 'success' && createdVault) {
+      setTimeout(() => navigate({ to: '/pay/$vault', params: { vault: createdVault } }), 300)
+    }
+  }, [txStatus, createdVault, navigate])
 
   async function submit() {
     const result = {
@@ -85,27 +85,22 @@ export function PushForm({ prefill }: { prefill?: AiDraft }) {
       dueDateIso: due,
     })
 
-    writeContract({
-      abi: InvoiceFactoryAbi,
-      address: addrs.factory as `0x${string}`,
-      functionName: 'createInvoice',
-      args: [
-        (token === 'cUSD' ? addrs.cUSD : addrs.USDT) as `0x${string}`,
-        amt,
-        dueTs,
-        metadataURI,
-        false,
-        [resolvedPayer],
-        [amt],
-      ],
+    mutation.mutate({
+      factory: addrs.factory as `0x${string}`,
+      token: (token === 'cUSD' ? addrs.cUSD : addrs.USDT) as `0x${string}`,
+      totalAmount: amt,
+      dueDate: dueTs,
+      metadataURI,
+      isOpenPayment: false,
+      allowedPayers: [resolvedPayer],
+      payerAmounts: [amt],
     })
-    toast.info('Submitting transaction\u2026')
   }
 
   return (
     <>
       <Card className="form-card">
-        <CardContent className="grid gap-4 px-5 py-5">
+        <CardContent className="grid gap-4 p-0">
           <div>
             <Label htmlFor="push-payer" className="field-label mb-2">
               Payer wallet
@@ -162,8 +157,8 @@ export function PushForm({ prefill }: { prefill?: AiDraft }) {
       </Card>
 
       <FormFooter feeLabel={`Estimated Fee: < 0.01 ${token}`}>
-        <button className="btn-primary w-full" onClick={submit} disabled={isPending || isMining}>
-          {isPending ? 'Confirm in wallet\u2026' : isMining ? 'Confirming\u2026' : 'Create invoice'}
+        <button className="btn-primary w-full" onClick={submit} disabled={busy}>
+          {busy ? 'Processing\u2026' : 'Create invoice'}
         </button>
       </FormFooter>
     </>

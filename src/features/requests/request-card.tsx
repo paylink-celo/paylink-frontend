@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
-import type { Abi } from 'viem'
-import { decodeEventLog } from 'viem'
 import { toast } from 'sonner'
 import { Calendar, CheckCircle2 } from 'lucide-react'
 
-import { InvoiceFactoryAbi } from '@/lib/abis/factory-abi'
+import { useConfirmRequest } from '@/hooks/mutation/use-confirm-request'
 import { truncateAddress } from '@/lib/format'
 
 import { avatarToneFor, displayNameFor } from './helpers'
@@ -28,38 +25,25 @@ export function RequestCard({
   const [expanded, setExpanded] = useState(false)
   const [due, setDue] = useState('')
   const [note, setNote] = useState('')
-  const { data: hash, writeContract, isPending } = useWriteContract()
-  const { data: receipt, isLoading: mining } = useWaitForTransactionReceipt({ hash })
+  const { status: txStatus, mutation, vaultAddr: createdVault } = useConfirmRequest()
+  const busy = txStatus === 'loading' || txStatus === 'confirming'
 
+  // Navigate to vault on success
   useEffect(() => {
-    if (!receipt || receipt.status !== 'success') return
-    for (const log of receipt.logs) {
-      try {
-        const decoded = decodeEventLog({
-          abi: InvoiceFactoryAbi as Abi,
-          data: log.data,
-          topics: [...log.topics] as [signature: `0x${string}`, ...args: `0x${string}`[]],
-        })
-        if (decoded.eventName === 'InvoiceCreated') {
-          const vault = (decoded.args as unknown as { vaultAddress: `0x${string}` }).vaultAddress
-          toast.success('Request accepted \u2713 \u2014 payment account created.')
-          setTimeout(() => navigate({ to: '/pay/$vault', params: { vault } }), 300)
-          return
-        }
-      } catch {
-        // ignore
-      }
+    if (txStatus === 'success' && createdVault) {
+      setTimeout(() => navigate({ to: '/pay/$vault', params: { vault: createdVault } }), 300)
     }
-  }, [receipt, navigate])
+  }, [txStatus, createdVault, navigate])
 
   function confirm() {
     if (!due) return toast.error('Pick a due date')
     if (Date.parse(due) <= Date.now()) return toast.error('Due date must be in the future')
-    writeContract({
-      abi: InvoiceFactoryAbi as Abi,
-      address: factory,
-      functionName: 'confirmInvoiceRequest',
-      args: [req.requestId, cUSD, BigInt(Math.floor(Date.parse(due) / 1000)), note || 'paylink://pull'],
+    mutation.mutate({
+      factory,
+      requestId: req.requestId,
+      token: cUSD,
+      dueDate: BigInt(Math.floor(Date.parse(due) / 1000)),
+      metadataURI: note || 'paylink://pull',
     })
   }
 
@@ -152,9 +136,9 @@ export function RequestCard({
                 type="button"
                 className="request-btn request-btn--primary"
                 onClick={confirm}
-                disabled={isPending || mining}
+                disabled={busy}
               >
-                {mining ? 'Confirming\u2026' : isPending ? 'Signing\u2026' : 'Confirm'}
+                {busy ? 'Processing\u2026' : 'Confirm'}
               </button>
             )}
           </>

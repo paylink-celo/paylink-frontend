@@ -9,7 +9,7 @@ import { InvoiceHeader } from '@/features/pay/invoice-header'
 import { InvoiceSummary } from '@/features/pay/invoice-summary'
 import { ReminderButton } from '@/features/pay/reminder-button'
 import { ShareSection } from '@/features/pay/share-section'
-import { useInvoice } from '@/features/pay/use-invoice'
+import { useInvoice } from '@/hooks/read/use-invoice'
 
 export const Route = createFileRoute('/pay/$vault')({ component: PayPage })
 

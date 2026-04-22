@@ -25,7 +25,7 @@ function CreatePage() {
     if (d) clearDraft()
     return d
   })
-  const [tab, setTab] = useState<Tab>(initialDraft?.mode ?? search.tab ?? 'pull')
+  const [tab, setTab] = useState<Tab>(initialDraft?.mode ?? search.tab ?? 'push')
 
   return (
     <div className="page-wrap pb-24 pt-6">

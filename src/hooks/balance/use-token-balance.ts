@@ -5,10 +5,9 @@ import { config } from "@/lib/wagmi";
 import { formatUnits } from "viem/utils";
 import { erc20Abi, zeroAddress } from "viem";
 import { getAddresses, type ChainAddresses } from "@/lib/addresses/addresses";
+import type { HexAddress } from "@/lib/utils/tx-types";
 
 const NATIVE_TOKEN_ALT = "0x0000000000000000000000000000000000000001";
-
-export type HexAddress = `0x${string}`;
 
 export type TokenKey = keyof ChainAddresses;
 
@@ -26,11 +25,6 @@ export const TOKEN_DECIMALS: Record<string, number> = {
   USDT: 6,
 };
 
-/**
- * Reads the on-chain balance for a token identified by its key in the
- * addresses config. The token address is resolved automatically based on
- * the current chain (testnet / mainnet).
- */
 export const useUserTokenBalance = (
   tokenKey: TokenKey,
   decimals: number,

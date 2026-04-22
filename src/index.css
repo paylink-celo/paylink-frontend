@@ -124,6 +124,29 @@ body::before {
     radial-gradient(circle at 42% 82%, rgba(47, 106, 74, 0.14), transparent 36%);
 }
 
+/* Subtle repeating dot grid so the page background doesn't feel flat. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image: url("/bg-pattern.svg");
+  background-repeat: repeat;
+  background-size: 44px 44px;
+  opacity: 0.55;
+  mask-image: radial-gradient(ellipse at center, black 0%, black 55%, transparent 92%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, black 55%, transparent 92%);
+}
+
+/* Bottom navbar active tab capsule */
+.nav-item--active {
+  border: 1px solid rgba(56, 161, 145, 0.28);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 6px 14px rgba(30, 90, 72, 0.12);
+}
+
 a {
   color: var(--lagoon-deep);
   text-decoration-color: rgba(50, 143, 151, 0.4);
@@ -163,6 +186,9 @@ code {
 }
 
 .feature-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   background: linear-gradient(165deg, color-mix(in oklab, var(--surface-strong) 93%, white 7%), var(--surface));
   box-shadow:
     0 1px 0 var(--inset-glint) inset,
@@ -173,6 +199,43 @@ code {
 .feature-card:hover {
   transform: translateY(-2px);
   border-color: color-mix(in oklab, var(--lagoon-deep) 35%, var(--line));
+}
+
+.feature-card__deco {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  /* SVGs are stroke-only (no background rect), so plain opacity
+     keeps the pattern lines crisp against the card's own surface. */
+  opacity: 0.6;
+}
+
+.feature-card__deco--teal {
+  /* Shift the SVG's blue strokes (~210°) toward the lagoon palette. */
+  filter: hue-rotate(-40deg) saturate(1.4);
+  opacity: 0.7;
+}
+
+.feature-card__deco--warm {
+  /* Shift the blue strokes to a warm terracotta matching the Invoices accent. */
+  filter: hue-rotate(170deg) saturate(1.6);
+  opacity: 0.6;
+}
+
+.feature-card__deco--neutral {
+  /* Mute the SVG's greens to a soft grey for the History card. */
+  filter: grayscale(1) brightness(0.85);
+  opacity: 0.55;
+}
+
+.feature-card__content {
+  position: relative;
+  z-index: 1;
 }
 
 button,
@@ -537,16 +600,79 @@ textarea.input-soft {
 
 /* ---------- Activity page ---------- */
 .balance-card {
-  background: linear-gradient(160deg, #cfe6dd 0%, #b9d7cc 100%);
-  border-radius: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  /* Single smooth diagonal gradient — no radial highlight to avoid seams. */
+  background: linear-gradient(135deg, #2a8475 0%, #38A191 50%, #2f6a4a 100%);
+  border-radius: 1.75rem;
   padding: 1.5rem 1.25rem;
   text-align: center;
   color: white;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.5) inset,
-    0 18px 36px rgba(30, 90, 72, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.32) inset,
+    0 24px 48px rgba(30, 90, 72, 0.28),
+    0 8px 22px rgba(23, 58, 64, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.balance-card__deco {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill; /* SVG already has preserveAspectRatio="none" */
+  /* Flat low opacity — no blend-mode, no mask — so tint is even across
+     the dark gradient without seams. */
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  /* Nudge the pale-green hue toward the lagoon/palm palette. */
+  filter: hue-rotate(-10deg) saturate(0.85);
+}
+
+.balance-card__inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Home balance summary ---------- */
+.balance-summary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  /* Soft mint-to-lagoon gradient so the card sits on-brand
+     without the old pale-lime tint. */
+  background: linear-gradient(160deg, #F2FBF6 0%, #D9F0E7 55%, #B8DFD6 100%);
+  border: 1px solid rgba(56, 161, 145, 0.22);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 22px 44px rgba(30, 90, 72, 0.14),
     0 6px 18px rgba(23, 58, 64, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.balance-summary__deco {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill; /* SVG already has preserveAspectRatio="none" */
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  /* Subtle teal overlay — multiply blends the pale-lime rect-fill
+     into the card's mint gradient and shifts the hue toward lagoon. */
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  filter: hue-rotate(-25deg) saturate(0.7);
+}
+
+.balance-summary__inner {
+  position: relative;
+  z-index: 1;
 }
 
 .balance-kicker {

@@ -7,6 +7,10 @@ const REQUEST_FIELDS = /* GraphQL */ `
     notes
     fulfilled
     createdAt
+    rejected
+    rejectedAt
+    rejectReason
+    rejectedBy
     fulfilledInvoice { vault }
   }
 `

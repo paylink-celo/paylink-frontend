@@ -1,5 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
-import { ArrowDownToLine, QrCode, Send } from 'lucide-react'
+import {
+  ArrowDownTrayIcon,
+  PaperAirplaneIcon,
+  QrCodeIcon,
+} from '@heroicons/react/24/outline'
 
 import { ActionButton } from './action-button'
 
@@ -8,18 +12,18 @@ export function ActionRow() {
   return (
     <section className="flex items-start justify-center gap-5 mb-6">
       <ActionButton
-        icon={<Send size={22} className="text-white" />}
+        icon={<PaperAirplaneIcon className="size-[22px] -rotate-45 text-white" />}
         label="Send"
         primary
         onClick={() => navigate({ to: '/create' })}
       />
       <ActionButton
-        icon={<ArrowDownToLine size={22} className="text-[var(--lagoon-deep)]" />}
+        icon={<ArrowDownTrayIcon className="size-[22px] text-[var(--lagoon-deep)]" />}
         label="Request"
         onClick={() => navigate({ to: '/create', search: { tab: 'pull' } })}
       />
       <ActionButton
-        icon={<QrCode size={22} className="text-[var(--lagoon-deep)]" />}
+        icon={<QrCodeIcon className="size-[22px] text-[var(--lagoon-deep)]" />}
         label="Scan"
         onClick={() => {
           /* future: global QR scanner */

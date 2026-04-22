@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 
+export type FeatureCardDecoVariant = 'teal' | 'warm' | 'neutral'
+
 export function FeatureCard({
   icon,
   iconBg,
@@ -7,6 +9,8 @@ export function FeatureCard({
   title,
   desc,
   onClick,
+  deco,
+  decoVariant,
 }: {
   icon: ReactNode
   iconBg: string
@@ -14,6 +18,8 @@ export function FeatureCard({
   title: string
   desc: string
   onClick: () => void
+  deco?: string
+  decoVariant?: FeatureCardDecoVariant
 }) {
   const descWords = desc.split(' ')
 
@@ -23,7 +29,17 @@ export function FeatureCard({
       onClick={onClick}
       className="island-shell feature-card rise-in h-[7.75rem] w-full rounded-3xl p-4 text-left transition-transform active:scale-[0.98] sm:h-auto sm:p-5"
     >
-      <div className="flex items-center gap-3 sm:block">
+      {deco && (
+        <img
+          src={deco}
+          alt=""
+          aria-hidden
+          className={`feature-card__deco ${
+            decoVariant ? `feature-card__deco--${decoVariant}` : ''
+          }`}
+        />
+      )}
+      <div className="feature-card__content flex items-center gap-3 sm:block">
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconBg} ${iconColor} sm:mb-4 sm:h-11 sm:w-11`}
         >

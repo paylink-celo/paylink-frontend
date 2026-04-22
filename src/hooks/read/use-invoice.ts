@@ -1,7 +1,7 @@
 import { useConnection, useReadContract, useReadContracts } from 'wagmi'
 import type { Abi } from 'viem'
 
-import { InvoiceVaultAbi } from '@/lib/abis/factory-abi'
+import { InvoiceVaultAbi } from '@/lib/abis/invoice-vault-abi'
 
 export type InvoiceState = {
   creator: `0x${string}` | undefined

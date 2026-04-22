@@ -1,35 +1,54 @@
-import { useConnection, useChainId, useReadContract } from 'wagmi'
-import { erc20Abi } from 'viem'
-import { TrendingUp } from 'lucide-react'
+import { useState } from 'react'
 
-import { getAddresses } from '@/lib/addresses/addresses'
-import { formatAmount } from '@/lib/format'
+import { TokenSelector } from '@/components/token-selector'
+import {
+  useUserTokenBalance,
+  TOKEN_DECIMALS,
+} from '@/hooks/balance/use-token-balance'
 
-export function BalanceSummary() {
-  const { address } = useConnection()
-  const chainId = useChainId()
-  const addrs = getAddresses(chainId)
+const TOKEN_OPTIONS = ['cUSD', 'USDT'] as const
+type TokenOption = (typeof TOKEN_OPTIONS)[number]
 
-  const { data: cUsdBalance } = useReadContract({
-    address: addrs.cUSD as `0x${string}`,
-    abi: erc20Abi,
-    functionName: 'balanceOf',
-    args: address ? [address] : undefined,
-    query: { enabled: Boolean(address && addrs.cUSD) },
+const formatAmount = (n: number) =>
+  n.toLocaleString('en-US', {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
   })
 
+export function BalanceSummary() {
+  const [token, setToken] = useState<TokenOption>('cUSD')
+
+  const cusd = useUserTokenBalance('cUSD', TOKEN_DECIMALS.cUSD)
+  const usdt = useUserTokenBalance('USDT', TOKEN_DECIMALS.USDT)
+
+  const balances: Record<TokenOption, number> = {
+    cUSD: cusd.userTokenBalanceParsed,
+    USDT: usdt.userTokenBalanceParsed,
+  }
+
   return (
-    <section className="island-shell rise-in rounded-3xl px-6 py-6 text-center mb-6">
-      <p className="island-kicker mb-2">Total Balance</p>
-      <div className="flex items-baseline justify-center gap-1">
-        <span className="text-sm font-semibold text-[var(--sea-ink-soft)]">cUSD</span>
-        <span className="display-title text-4xl font-bold text-[var(--sea-ink)]">
-          {cUsdBalance !== undefined ? formatAmount(cUsdBalance) : '0.00'}
-        </span>
-      </div>
-      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--lagoon-soft)] px-3 py-1">
-        <TrendingUp size={14} className="text-[var(--lagoon-deep)]" />
-        <span className="text-sm font-medium text-[var(--lagoon-deep)]">PayLink on Celo</span>
+    <section className="balance-card rise-in mb-6">
+      <img
+        src="/Curve%20Line.svg"
+        alt=""
+        aria-hidden
+        className="balance-card__deco"
+      />
+      <div className="balance-card__inner">
+        <p className="balance-kicker mb-2">Total Balance</p>
+        <div className="flex flex-col items-center justify-center gap-2">
+          <span className="balance-amount">
+            {formatAmount(balances[token])}
+          </span>
+          <TokenSelector
+            value={token}
+            onChange={setToken}
+            options={TOKEN_OPTIONS.map((symbol) => ({
+              symbol,
+              balance: balances[symbol],
+            }))}
+          />
+        </div>
       </div>
     </section>
   )

@@ -8,7 +8,7 @@ export const Route = createFileRoute('/')({ component: HomePage })
 
 function HomePage() {
   return (
-    <div className="px-4 pb-24 pt-4">
+    <div className="px-4 pt-4">
       <BalanceSummary />
       <ActionRow />
       <FeatureGrid />

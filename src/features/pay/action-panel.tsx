@@ -1,10 +1,9 @@
 import { statusLabel } from '@/lib/format'
-
 import { Banner } from './banner'
 import { CreatorActions } from './creator-actions'
 import { PayerActions } from './payer-actions'
 import { RefundActions } from './refund-actions'
-import type { InvoiceState, PayerInfo } from './use-invoice'
+import type { InvoiceState, PayerInfo } from '@/hooks/read/use-invoice'
 
 export function ActionPanel({
   vaultAddr,
