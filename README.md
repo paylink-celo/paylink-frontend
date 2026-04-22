@@ -1,193 +1,50 @@
-Welcome to your new TanStack Start app! 
-
-# Getting Started
-
-To run this application:
-
-```bash
-npm install
-npm run dev
+# PayLink MiniPay
+React + Vite + TanStack Router PWA for PayLink on Celo. Uses wagmi / viem for
+on-chain reads, talks to the optional [PayLink backend](./backend-docs.md) for
+AI, IPFS, PDF, x402 and phone-number resolution.
+## Quick start
+```sh
+bun install
+cp .env.example .env            # fill in at least VITE_CHAIN_ID
+bun run dev                     # http://localhost:5173
 ```
-
-# Building For Production
-
-To build this application for production:
-
-```bash
-npm run build
+The app is fully usable without a backend — AI copilot, IPFS pinning, phone
+lookups, PDF export, x402 and the reminder digest are feature-flagged on
+`VITE_BACKEND_URL`.
+## Environment variables
+| Var | Purpose |
+|---|---|
+| `VITE_CHAIN_ID` | `11142220` = Celo Sepolia, `42220` = Celo Mainnet. |
+| `VITE_BACKEND_URL` | Base URL of the PayLink Hono backend. Unlocks AI, IPFS, PDF, x402 and phone resolution. Leave blank to run fully on-chain. |
+| `VITE_SUBGRAPH_URL` | Optional Ponder/Goldsky GraphQL endpoint. When set, dashboards and activity feeds use it instead of raw log scanning. |
+The .env.example also lists **backend** env vars for cross-reference — those are
+consumed by the separate Hono service, not by Vite.
+## Routes
+- `/` — home, balance + quick actions
+- `/create` — send / split / request / agent flows (AI quick-start when backend is set)
+- `/activity` — per-user invoice feed (ex-`/dashboard`, linked as "Activity" in the bottom nav)
+- `/requests` — incoming / outgoing pull-invoice requests with Pending / Completed tabs
+- `/pay/$vault` — invoice detail, payer actions, share link, PDF download, event timeline, x402 discovery, overdue digest trigger
+## Backend integration surface
+The typed client lives at `src/lib/api.ts` and wraps every backend endpoint
+documented in `backend-docs.md`:
+- `getInvoice(vault)` / `getInvoiceActivity(vault)` — LRU-cached reads + event timeline
+- `invoicePdfUrl(vault)` / `x402PayUrl(vault)` — server-rendered PDF + agent discovery URL
+- `pinMetadata(payload)` — invoice JSON → `ipfs://<cid>` (falls back to an inline data URI)
+- `resolvePhone(number)` / `resolveRecipient(raw)` — turn `+E.164` into `0x` wallet via SocialConnect
+- `parseInvoice(prompt)` — NL → structured draft for the Create form
+- `triggerReminders()` — kick the overdue-invoices cron, sends Telegram digest if configured
+Creating an invoice without a backend still works — `buildMetadataURI` and
+`resolveRecipient` degrade gracefully to plain text / require 0x addresses.
+## Scripts
+```sh
+bun run dev      # Vite dev server with HMR and React Compiler
+bun run build    # tsc -b && vite build
+bun run preview  # serve ./dist locally
+bun run lint     # eslint (typed)
 ```
-
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
-
-```bash
-npm run test
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `npm install @tailwindcss/vite tailwindcss -D`
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+## Tech stack
+- **React 19** + **React Compiler** + **TanStack Router (file-based)**
+- **wagmi v3** + **viem** (Celo Sepolia / Mainnet, auto-connect in MiniPay)
+- **Tailwind v4** via `@tailwindcss/vite` + a small custom design token layer
+- **qrcode.react**, **sonner**, **lucide-react**, **@ai-sdk/react** for the AI chat drawer
