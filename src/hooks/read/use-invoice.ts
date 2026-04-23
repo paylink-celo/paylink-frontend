@@ -12,6 +12,9 @@ export type InvoiceState = {
   status: number
   metadata: string
   isOpen: boolean
+  /** True when every allowed payer has called `decline()`. Lets the creator
+   *  know the invoice is effectively abandoned and can be cancelled. */
+  allPayersDeclined: boolean
 }
 
 export type PayerInfo = {
@@ -24,6 +27,8 @@ export type PayerInfo = {
 export function useInvoice(vaultAddr: `0x${string}`): {
   invoice: InvoiceState
   payerInfo: PayerInfo | undefined
+  /** Whether the connected wallet has already called `decline()` on this vault. */
+  iDeclined: boolean
   me: `0x${string}` | undefined
   refetch: () => void
 } {
@@ -39,6 +44,7 @@ export function useInvoice(vaultAddr: `0x${string}`): {
       { address: vaultAddr, abi: InvoiceVaultAbi as Abi, functionName: 'status' },
       { address: vaultAddr, abi: InvoiceVaultAbi as Abi, functionName: 'metadataURI' },
       { address: vaultAddr, abi: InvoiceVaultAbi as Abi, functionName: 'isOpenPayment' },
+      { address: vaultAddr, abi: InvoiceVaultAbi as Abi, functionName: 'allPayersDeclined' },
     ],
     query: { refetchInterval: 6000 },
   })
@@ -52,6 +58,7 @@ export function useInvoice(vaultAddr: `0x${string}`): {
     status: Number(bulk?.[5]?.result ?? 0),
     metadata: (bulk?.[6]?.result as string | undefined) ?? '',
     isOpen: Boolean(bulk?.[7]?.result ?? false),
+    allPayersDeclined: Boolean(bulk?.[8]?.result ?? false),
   }
 
   const { data: payerInfoRaw, refetch: refetchPayer } = useReadContract({
@@ -62,13 +69,23 @@ export function useInvoice(vaultAddr: `0x${string}`): {
     query: { enabled: Boolean(me), refetchInterval: 6000 },
   })
 
+  const { data: declinedRaw, refetch: refetchDeclined } = useReadContract({
+    address: vaultAddr,
+    abi: InvoiceVaultAbi as Abi,
+    functionName: 'declined',
+    args: me ? [me] : undefined,
+    query: { enabled: Boolean(me), refetchInterval: 6000 },
+  })
+
   return {
     invoice,
     payerInfo: payerInfoRaw as PayerInfo | undefined,
+    iDeclined: Boolean(declinedRaw),
     me,
     refetch: () => {
       void refetch()
       void refetchPayer()
+      void refetchDeclined()
     },
   }
 }

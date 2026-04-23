@@ -27,12 +27,24 @@ export type SgInvoiceRequest = {
   amount: string
   notes: string
   fulfilled: boolean
-  createdAt: string
   rejected: boolean
   rejectedAt: string | null
   rejectReason: string | null
   rejectedBy: `0x${string}` | null
-  fulfilledInvoice: { vault: `0x${string}` } | null
+  createdAt: string
+  /**
+   * When the counterparty accepts the request, the factory creates a vault
+   * and the subgraph links it here. We inline just the subset of invoice
+   * fields the requests UI needs to know whether the requester (now the
+   * payer) still has to settle.
+   */
+  fulfilledInvoice: {
+    vault: `0x${string}`
+    status: SgInvoice['status']
+    token: `0x${string}`
+    totalAmount: string
+    totalCollected: string
+  } | null
 }
 
 export type SgPolicySetting = {

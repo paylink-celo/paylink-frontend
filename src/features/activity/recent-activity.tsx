@@ -6,9 +6,12 @@ import { EmptyCard } from '@/components/empty-card'
 import { getAddresses } from '@/lib/addresses/addresses'
 
 import { ActivityRow } from './activity-row'
+import { ActivityRowSkeleton } from './activity-row-skeleton'
 import { toActivityItem } from './helpers'
 import { useInvoices } from './use-invoices'
 import type { ActivityItem } from './types'
+
+const LOADING_SKELETONS = 4
 
 export function RecentActivity() {
   const { address } = useConnection()
@@ -31,14 +34,22 @@ export function RecentActivity() {
       {address && !factory && (
         <EmptyCard title="Not available yet" body="PayLink is being set up. Please try again later." />
       )}
-      {loading && <p className="text-base text-[var(--sea-ink-soft)]">Loading activity…</p>}
+
+      {address && loading && (
+        <div className="grid gap-3" aria-busy aria-label="Loading activity">
+          {Array.from({ length: LOADING_SKELETONS }).map((_, i) => (
+            <ActivityRowSkeleton key={i} />
+          ))}
+        </div>
+      )}
+
       {error && (
         <p className="text-base text-[var(--status-expired)]" role="alert">
           Something went wrong. Please try again.
         </p>
       )}
 
-      {items.length > 0 && (
+      {!loading && items.length > 0 && (
         <div className="grid gap-3">
           {items.map((it) => (
             <ActivityRow key={it.vault} item={it} />

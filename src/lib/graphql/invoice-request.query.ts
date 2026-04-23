@@ -6,12 +6,18 @@ const REQUEST_FIELDS = /* GraphQL */ `
     amount
     notes
     fulfilled
-    createdAt
     rejected
     rejectedAt
     rejectReason
     rejectedBy
-    fulfilledInvoice { vault }
+    createdAt
+    fulfilledInvoice {
+      vault
+      status
+      token
+      totalAmount
+      totalCollected
+    }
   }
 `
 
