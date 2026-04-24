@@ -7,6 +7,7 @@ export type InvoiceRequest = {
   notes: string
   direction: Direction
   fulfilledVault?: `0x${string}`
+  rejected?: boolean
 }
 
 export type TabKey = 'pending' | 'completed'

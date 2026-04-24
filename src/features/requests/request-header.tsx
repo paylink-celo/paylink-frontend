@@ -1,36 +1,35 @@
-import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
-import { formatAmount } from '@/lib/format'
+import { formatAmount } from "@/lib/format";
 
-import type { Direction } from './types'
+import type { Direction } from "./types";
 
 export function RequestHeader({
   direction,
   name,
   subtitle,
   amount,
-  avatarTone,
 }: {
-  direction: Direction
-  name: string
-  subtitle: string
-  amount: bigint
-  avatarTone: string
+  direction: Direction;
+  name: string;
+  subtitle: string;
+  amount: bigint;
+  avatarTone: string;
 }) {
-  const label = direction === 'incoming' ? 'INCOMING' : 'OUTGOING'
-  const labelColor = direction === 'incoming' ? 'text-[#B9603A]' : 'text-[var(--lagoon-deep)]'
-  const Arrow = direction === 'incoming' ? ArrowDownLeft : ArrowUpRight
-  const initial = name.charAt(0).toUpperCase() || 'U'
-  const truncatedSubtitle = subtitle.length > 10 ? `${subtitle.slice(0, 10)}...` : subtitle
+  const label = direction === "incoming" ? "INCOMING" : "OUTGOING";
+  const labelColor =
+    direction === "incoming" ? "text-[#B9603A]" : "text-[var(--lagoon-deep)]";
+  const Arrow = direction === "incoming" ? ArrowDownLeft : ArrowUpRight;
+  const truncatedSubtitle =
+    subtitle.length > 10 ? `${subtitle.slice(0, 10)}...` : subtitle;
 
   return (
     <div className="flex items-start gap-3">
-      <div
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-bold text-white"
-        style={{ background: avatarTone }}
-      >
-        {initial}
-      </div>
+      <img
+        src="/paylink-light.png"
+        alt={name}
+        className="h-12 w-12 rounded-full"
+      />
       <div className="min-w-0 flex-1">
         <p
           className={`m-0 flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${labelColor}`}
@@ -49,5 +48,5 @@ export function RequestHeader({
         </p>
       </div>
     </div>
-  )
+  );
 }

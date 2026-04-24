@@ -32,6 +32,7 @@ export function useRequests(): {
         notes: sr.notes,
         direction: 'incoming',
         fulfilledVault: sr.fulfilledInvoice?.vault,
+        rejected: sr.rejected ?? false,
       })
     }
     for (const sr of sg.data.outgoing) {
@@ -42,6 +43,7 @@ export function useRequests(): {
         notes: sr.notes,
         direction: 'outgoing',
         fulfilledVault: sr.fulfilledInvoice?.vault,
+        rejected: sr.rejected ?? false,
       })
     }
     return rows

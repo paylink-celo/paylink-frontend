@@ -1,4 +1,4 @@
-import { AgentForm } from './forms/agent-form'
+import { AgentChat } from './forms/agent-chat'
 import { PullForm } from './forms/pull-form'
 import { PushForm } from './forms/push-form'
 import { SplitForm } from './forms/split-form'
@@ -14,5 +14,5 @@ export function CreatePanel({ tab, aiDraft }: { tab: Tab; aiDraft: AiDraft | nul
   if (tab === 'pull') {
     return <PullForm prefill={aiDraft?.mode === 'pull' ? aiDraft : undefined} />
   }
-  return <AgentForm />
+  return <AgentChat />
 }

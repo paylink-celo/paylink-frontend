@@ -21,7 +21,10 @@ export function RequestList() {
     () => rows.filter((r) => !dismissed.has(r.requestId)),
     [rows, dismissed],
   )
-  const pending = useMemo(() => visibleRows.filter((r) => !r.fulfilledVault), [visibleRows])
+  const pending = useMemo(
+    () => visibleRows.filter((r) => !r.fulfilledVault && !r.rejected),
+    [visibleRows],
+  )
   const completed = useMemo(() => visibleRows.filter((r) => r.fulfilledVault), [visibleRows])
   const activeList = tab === 'pending' ? pending : completed
 
@@ -41,12 +44,12 @@ export function RequestList() {
             className={`segmented-item ${tab === k ? 'segmented-item--active' : ''}`}
           >
             {label}
-          </button>
+          </button> 
         ))}
       </div>
 
-      {!address && <p className="text-base text-[var(--sea-ink-soft)]">Connecting to your wallet…</p>}
-      {loading && <p className="text-base text-[var(--sea-ink-soft)]">Loading requests…</p>}
+      {!address && <p className="text-base text-(--sea-ink-soft)">Connecting to your wallet…</p>}
+      {loading && <p className="text-base text-(--sea-ink-soft)">Loading requests…</p>}
 
       {address && !loading && activeList.length === 0 && (
         <EmptyCard
