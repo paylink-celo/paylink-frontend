@@ -1,4 +1,4 @@
-import { formatAmount, parseAmount } from '@/lib/format'
+import { formatUnits, parseUnits } from 'viem'
 
 export function tokenLabel(addr: `0x${string}` | undefined): 'cUSD' | 'USDT' | 'token' {
   if (!addr) return 'token'
@@ -8,6 +8,23 @@ export function tokenLabel(addr: `0x${string}` | undefined): 'cUSD' | 'USDT' | '
   if (lower === '0x765de816845861e75a25fca122bb6898b8b1282a') return 'cUSD'
   if (lower === '0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e') return 'USDT'
   return 'token'
+}
+
+/**
+ * On-chain decimals for each supported token. USDT on Celo uses 6 decimals
+ * (matching the Ethereum USDT contract), while cUSD uses 18. Callers that
+ * convert user input ⇄ bigint must pass the right scale or the amount will
+ * be off by `10**12`.
+ */
+export function tokenDecimals(addr: `0x${string}` | undefined): number {
+  switch (tokenLabel(addr)) {
+    case 'USDT':
+      return 6
+    case 'cUSD':
+      return 18
+    default:
+      return 18
+  }
 }
 
 export function humanizeEvent(type: string): string {
@@ -33,15 +50,26 @@ export function formatTs(ts: number): string {
   return new Date(ts * 1000).toLocaleString()
 }
 
-export function asInput(v: bigint): string {
-  const s = formatAmount(v).replace(/,/g, '')
-  return s === '0.00' ? '' : s
+/**
+ * Convert an on-chain balance to a raw input string (no thousands separators),
+ * suitable for placing into a controlled `<input>` the user can edit.
+ *
+ * `decimals` MUST come from the token: 18 for cUSD, 6 for USDT, etc.
+ */
+export function asInput(v: bigint, decimals = 18): string {
+  if (v === 0n) return ''
+  return formatUnits(v, decimals)
 }
 
-export function parseInput(v: string): bigint {
+/**
+ * Parse a human-typed amount (e.g. "2.5") into a bigint with the given token
+ * decimals. Returns `0n` on any parse failure so callers can validate before
+ * submitting.
+ */
+export function parseInput(v: string, decimals = 18): bigint {
   if (!v) return 0n
   try {
-    return parseAmount(v)
+    return parseUnits(v as `${number}`, decimals)
   } catch {
     return 0n
   }

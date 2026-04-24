@@ -2,9 +2,16 @@ import { Link } from '@tanstack/react-router'
 import { AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react'
 
 import { formatAmount, truncateAddress } from '@/lib/format'
+import { TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
 import { useMyToPay, type ToPayItem } from '@/hooks/graphql/use-my-to-pay'
 
 import { urgencyChipClass, urgencyLabel } from './urgency'
+
+// Resolve decimals from the token symbol attached to a ToPayItem. The hook
+// itself keeps the mapping aligned with the canonical `TOKEN_DECIMALS`.
+function decimalsForSymbol(symbol: string): number {
+  return TOKEN_DECIMALS[symbol] ?? 18
+}
 
 const SHOW_ON_HOME = 3
 
@@ -60,7 +67,10 @@ export function ToPayCard() {
         <div className="flex flex-col items-end text-xs text-[var(--sea-ink-soft)]">
           {totalsByToken.map((t) => (
             <span key={t.symbol} className="whitespace-nowrap">
-              <b className="text-[var(--sea-ink)]">{formatAmount(t.amount)}</b> {t.symbol}
+              <b className="text-[var(--sea-ink)]">
+                {formatAmount(t.amount, decimalsForSymbol(t.symbol))}
+              </b>{' '}
+              {t.symbol}
             </span>
           ))}
         </div>
@@ -107,7 +117,7 @@ function Row({ item }: { item: ToPayItem }) {
       </div>
       <div className="shrink-0 text-right">
         <p className="m-0 text-sm font-bold text-[var(--sea-ink)]">
-          {formatAmount(item.amountDue)}
+          {formatAmount(item.amountDue, decimalsForSymbol(item.tokenSymbol))}
         </p>
         <p className="m-0 text-[10px] font-semibold text-[var(--sea-ink-soft)]">
           {item.tokenSymbol}

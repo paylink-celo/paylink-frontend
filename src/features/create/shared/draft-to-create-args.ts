@@ -1,5 +1,6 @@
 import type { AiDraft } from '@/lib/api'
 import type { ChainAddresses } from '@/lib/addresses/addresses'
+import { TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
 import { parseAmount } from '@/lib/format'
 
 export const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/u
@@ -56,12 +57,14 @@ export function buildCreateArgs(draft: AiDraft, addrs: ChainAddresses): CreateIn
   let totalWei: bigint
   let allowedPayers: `0x${string}`[] = []
   let payerAmounts: bigint[] = []
+  // Token-specific on-chain scale (USDT=6, cUSD=18).
+  const decimals = TOKEN_DECIMALS[draft.token] ?? 18
   try {
     if (isOpen) {
-      totalWei = parseAmount(draft.amount)
+      totalWei = parseAmount(draft.amount, decimals)
     } else {
       allowedPayers = validPayers.map((p) => p.address as `0x${string}`)
-      payerAmounts = validPayers.map((p) => parseAmount(p.amount || draft.amount || '0'))
+      payerAmounts = validPayers.map((p) => parseAmount(p.amount || draft.amount || '0', decimals))
       totalWei = payerAmounts.reduce((a, b) => a + b, 0n)
     }
   } catch {

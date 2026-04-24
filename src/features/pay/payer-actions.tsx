@@ -7,7 +7,7 @@ import { useVaultDeposit } from '@/hooks/mutation/use-vault-deposit'
 import { InvoiceVaultAbi } from '@/lib/abis/invoice-vault-abi'
 import { formatAmount } from '@/lib/format'
 
-import { asInput, parseInput } from './helpers'
+import { asInput, parseInput, tokenDecimals } from './helpers'
 import { X402PayButton } from './x402-pay-button'
 
 export function PayerActions({
@@ -32,9 +32,14 @@ export function PayerActions({
   const [confirmingDecline, setConfirmingDecline] = useState(false)
   const { status, mutation } = useVaultDeposit()
 
+  // Single source of truth for the token's on-chain scale. USDT uses 6
+  // decimals on Celo, cUSD uses 18 — using the wrong scale silently inflates
+  // amounts by 10**12 and the tx reverts against insufficient balance.
+  const decimals = tokenDecimals(tokenAddr)
+
   useEffect(() => {
-    if (!isOpen && input === '') setInput(asInput(remaining))
-  }, [isOpen, remaining, input])
+    if (!isOpen && input === '') setInput(asInput(remaining, decimals))
+  }, [isOpen, remaining, input, decimals])
 
   // When deposit succeeds, refresh parent
   useEffect(() => {
@@ -63,7 +68,7 @@ export function PayerActions({
 
   function pay() {
     if (!me) return toast.error('Connect wallet first')
-    const amount = parseInput(input)
+    const amount = parseInput(input, decimals)
     if (amount <= 0n) return toast.error('Enter an amount')
     mutation.mutate({ vaultAddr, tokenAddr, amount })
   }
@@ -84,8 +89,8 @@ export function PayerActions({
       <h3 className="text-base font-semibold text-[var(--sea-ink)]">Your share</h3>
       <p className="mt-1 mb-4 text-sm text-[var(--sea-ink-soft)]">
         {isOpen
-          ? `Open invoice \u2014 contribute up to ${formatAmount(remaining)} remaining.`
-          : `You owe ${formatAmount(remaining)}.`}
+          ? `Open invoice \u2014 contribute up to ${formatAmount(remaining, decimals)} remaining.`
+          : `You owe ${formatAmount(remaining, decimals)}.`}
       </p>
       <div className="flex flex-col gap-3">
         <label>
@@ -104,7 +109,7 @@ export function PayerActions({
           vaultAddr={vaultAddr}
           tokenAddr={tokenAddr}
           from={me}
-          amount={parseInput(input)}
+          amount={parseInput(input, decimals)}
           disabled={busy}
           onDone={onDone}
         />

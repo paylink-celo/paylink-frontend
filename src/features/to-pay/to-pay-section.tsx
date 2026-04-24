@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { AlertTriangle } from 'lucide-react'
 
 import { formatAmount, truncateAddress } from '@/lib/format'
+import { TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
 import { useMyToPay, type ToPayItem } from '@/hooks/graphql/use-my-to-pay'
 
 import { urgencyChipClass, urgencyLabel } from './urgency'
@@ -67,7 +68,9 @@ function ToPayRow({ item }: { item: ToPayItem }) {
       </div>
       <div className="min-w-0 flex-1">
         <p className="m-0 truncate text-sm font-semibold text-[var(--sea-ink)]">
-          {truncateAddress(item.creator)} wants {formatAmount(item.amountDue)} {item.tokenSymbol}
+          {truncateAddress(item.creator)} wants{' '}
+          {formatAmount(item.amountDue, TOKEN_DECIMALS[item.tokenSymbol] ?? 18)}{' '}
+          {item.tokenSymbol}
         </p>
         <p className="mt-1 m-0 text-xs text-[var(--sea-ink-soft)]">
           <span

@@ -1,7 +1,7 @@
 import StatusBadge from '@/components/status-badge'
 import { formatAmount, formatDate, truncateAddress } from '@/lib/format'
 import { urgencyChipClass, urgencyLabel } from '@/features/to-pay/urgency'
-import { tokenLabel } from './helpers'
+import { tokenDecimals, tokenLabel } from './helpers'
 
 // Vault status enum: 0 PENDING, 1 PARTIAL, 2 FUNDED, 3 SETTLED, 4 DISPUTED,
 // 5 CANCELLED, 6 EXPIRED. Urgency is only meaningful while funds can still be
@@ -33,7 +33,7 @@ export function InvoiceHeader({
     <header className="mb-5">
       <p className="island-kicker mb-1">Invoice</p>
       <h1 className="display-title text-2xl font-bold text-(--sea-ink)">
-        {formatAmount(totalAmount)} {tokenLabel(tokenAddr)}
+        {formatAmount(totalAmount, tokenDecimals(tokenAddr))} {tokenLabel(tokenAddr)}
       </h1>
       <p className="mt-1 text-sm text-(--sea-ink-soft)">
         From {creator ? truncateAddress(creator) : '—'} · Due {formatDate(dueDate)}

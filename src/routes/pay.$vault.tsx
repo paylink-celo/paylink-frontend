@@ -30,6 +30,7 @@ function PayPage() {
       />
       <InvoiceSummary
         vaultAddr={vaultAddr}
+        tokenAddr={invoice.tokenAddr}
         totalAmount={invoice.totalAmount}
         totalCollected={invoice.totalCollected}
         metadata={invoice.metadata}
