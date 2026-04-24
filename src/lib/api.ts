@@ -186,8 +186,18 @@ export type AiDraft = {
   counterparty?: string
 }
 
-export function parseInvoice(input: string): Promise<{ draft: AiDraft; error?: string }> {
-  return requestJson<{ draft: AiDraft; error?: string }>('/api/ai/parse-invoice', {
+/**
+ * Parse natural language into a structured invoice draft.
+ *
+ * Backend returns both:
+ *   - `draft`   — Zod-validated structured draft, or `null` if parsing failed
+ *   - `message` — markdown summary suitable for chat display
+ *
+ * When `draft` is null, the caller should surface `message` (which contains the
+ * LLM's explanation of why it couldn't produce a draft).
+ */
+export function parseInvoice(input: string): Promise<{ draft: AiDraft | null; message: string }> {
+  return requestJson<{ draft: AiDraft | null; message: string }>('/api/ai/parse-invoice', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ input }),

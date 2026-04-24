@@ -74,7 +74,10 @@ export function PullForm({ prefill }: { prefill?: AiDraft }) {
     mutation.mutate({
       factory: addrs.factory as `0x${string}`,
       counterparty: resolvedCounterparty,
-      amount: parseAmount(amount),
+      // Pull requests are denominated in the chosen token; encode with its
+      // on-chain scale or the confirming counterparty will be asked for an
+      // absurd amount.
+      amount: parseAmount(amount, TOKEN_DECIMALS[token]),
       notes: encoded,
     })
   }

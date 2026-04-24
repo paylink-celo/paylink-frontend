@@ -13,6 +13,9 @@ import {
 } from '@heroicons/react/24/solid'
 import type { ComponentType, SVGProps } from 'react'
 
+import { useMyToPay } from '@/hooks/graphql/use-my-to-pay'
+import { urgencyDotClass } from '@/features/to-pay/urgency'
+
 type NavIcon = ComponentType<SVGProps<SVGSVGElement>>
 
 const navItems: Array<{
@@ -29,6 +32,8 @@ const navItems: Array<{
 
 export function BottomNavbar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const { count, overdueCount } = useMyToPay()
+  const badgeUrgency = overdueCount > 0 ? 'overdue' : count > 0 ? 'dueSoon' : 'future'
 
   return (
     <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[var(--header-bg)] backdrop-blur-md border-t border-[var(--line)] z-50">
@@ -41,6 +46,10 @@ export function BottomNavbar() {
 
           const ActiveOrIdle = isActive ? IconActive : Icon
 
+          // The "bills to pay" count surfaces on the Activity tab since that's
+          // where the full obligations list lives.
+          const badge = to === '/activity' && count > 0 ? count : 0
+
           return (
             <Link
               key={to}
@@ -51,8 +60,18 @@ export function BottomNavbar() {
                   ? 'nav-item--active bg-[var(--lagoon-soft)]/55 text-[var(--lagoon-deep)]'
                   : 'text-[var(--sea-ink-soft)] hover:text-[var(--sea-ink)]'
               }`}
+              aria-label={badge > 0 ? `${label} (${badge} pending)` : label}
             >
-              <ActiveOrIdle className="size-[22px]" />
+              <span className="relative">
+                <ActiveOrIdle className="size-[22px]" />
+                {badge > 0 && (
+                  <span
+                    className={`absolute -top-1 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white ${urgencyDotClass(badgeUrgency)}`}
+                  >
+                    {badge > 9 ? '9+' : badge}
+                  </span>
+                )}
+              </span>
               <span
                 className={`text-xs ${
                   isActive ? 'font-semibold' : 'font-medium'

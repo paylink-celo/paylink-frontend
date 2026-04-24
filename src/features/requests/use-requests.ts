@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { getAddresses } from '@/lib/addresses/addresses'
 import { hasSubgraph } from '@/lib/graphql/client'
+import { statusFromSubgraph } from '@/lib/graphql/types'
 import { useInvoiceRequestsByUser } from '@/hooks/graphql/use-invoice-requests-by-user'
 
 import { loadRequestsOnChain } from './loader'
@@ -24,6 +25,16 @@ export function useRequests(): {
   const subgraphRows = useMemo<InvoiceRequest[]>(() => {
     if (!sg.data) return []
     const rows: InvoiceRequest[] = []
+    const mapFulfilled = (fi: (typeof sg.data.incoming)[number]['fulfilledInvoice']) =>
+      fi
+        ? {
+            vault: fi.vault,
+            status: statusFromSubgraph(fi.status),
+            token: fi.token,
+            totalAmount: BigInt(fi.totalAmount),
+            totalCollected: BigInt(fi.totalCollected),
+          }
+        : undefined
     for (const sr of sg.data.incoming) {
       rows.push({
         requestId: sr.id,
@@ -32,6 +43,10 @@ export function useRequests(): {
         notes: sr.notes,
         direction: 'incoming',
         fulfilledVault: sr.fulfilledInvoice?.vault,
+        fulfilledInvoice: mapFulfilled(sr.fulfilledInvoice),
+        rejected: sr.rejected,
+        rejectedAt: sr.rejectedAt ? Number(sr.rejectedAt) : undefined,
+        rejectReason: sr.rejectReason ?? undefined,
       })
     }
     for (const sr of sg.data.outgoing) {
@@ -42,6 +57,10 @@ export function useRequests(): {
         notes: sr.notes,
         direction: 'outgoing',
         fulfilledVault: sr.fulfilledInvoice?.vault,
+        fulfilledInvoice: mapFulfilled(sr.fulfilledInvoice),
+        rejected: sr.rejected,
+        rejectedAt: sr.rejectedAt ? Number(sr.rejectedAt) : undefined,
+        rejectReason: sr.rejectReason ?? undefined,
       })
     }
     return rows

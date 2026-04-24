@@ -75,7 +75,9 @@ export function PushForm({ prefill }: { prefill?: AiDraft }) {
       return
     }
 
-    const amt = parseAmount(amount)
+    // USDT is 6-decimal on Celo, cUSD is 18. Encoding with the wrong scale
+    // stores a trillion-fold amount on-chain that is effectively unpayable.
+    const amt = parseAmount(amount, TOKEN_DECIMALS[token])
     const dueTs = BigInt(Math.floor(Date.parse(due) / 1000))
     const metadataURI = await buildMetadataURI({
       flow: 'push',

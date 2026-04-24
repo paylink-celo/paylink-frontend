@@ -16,7 +16,7 @@ export const Route = createFileRoute('/pay/$vault')({ component: PayPage })
 function PayPage() {
   const { vault } = Route.useParams()
   const vaultAddr = vault as `0x${string}`
-  const { invoice, payerInfo, me, refetch } = useInvoice(vaultAddr)
+  const { invoice, payerInfo, iDeclined, me, refetch } = useInvoice(vaultAddr)
   const isCreator = Boolean(me && me === invoice.creator)
 
   return (
@@ -30,6 +30,7 @@ function PayPage() {
       />
       <InvoiceSummary
         vaultAddr={vaultAddr}
+        tokenAddr={invoice.tokenAddr}
         totalAmount={invoice.totalAmount}
         totalCollected={invoice.totalCollected}
         metadata={invoice.metadata}
@@ -38,6 +39,7 @@ function PayPage() {
         vaultAddr={vaultAddr}
         invoice={invoice}
         payerInfo={payerInfo}
+        iDeclined={iDeclined}
         me={me}
         onDone={refetch}
       />

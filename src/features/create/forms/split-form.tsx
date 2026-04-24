@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { TOKEN_DECIMALS } from "@/hooks/balance/use-token-balance";
 import { useCreateInvoice } from "@/hooks/mutation/use-create-invoice";
 import { getAddresses } from "@/lib/addresses/addresses";
 import { parseAmount } from "@/lib/format";
@@ -92,7 +93,9 @@ export function SplitForm({ prefill }: { prefill?: AiDraft }) {
       );
     }
 
-    const amts = payers.map((p) => parseAmount(p.amt));
+    // Encode each payer's share at the token's on-chain scale (USDT=6, cUSD=18).
+    const decimals = TOKEN_DECIMALS[token];
+    const amts = payers.map((p) => parseAmount(p.amt, decimals));
     const totalWei = amts.reduce((acc, v) => acc + v, 0n);
     const dueTs = BigInt(Math.floor(Date.parse(due) / 1000));
     const metadataURI = await buildMetadataURI({
