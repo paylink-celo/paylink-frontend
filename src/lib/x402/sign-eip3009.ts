@@ -7,8 +7,10 @@ import { parseSignature } from 'viem'
  * signature, not gas.
  *
  * Flow:
- *   1. Read the token's EIP-712 domain via EIP-5267 `eip712Domain()`, with a
- *      static fallback for known Celo stablecoins that don't expose it.
+ *   1. Resolve the token's EIP-712 domain by calling `name()` and `version()`
+ *      on the token contract. This MUST match what the backend verifier does
+ *      in `x402-prevalidate.ts`, otherwise the recovered address will differ
+ *      from `from` and the relay will reject the payload.
  *   2. Build the typed-data message with the vault as `to`, the user's
  *      address as `from`, and a random 32-byte nonce.
  *   3. Ask the wallet to sign with `signTypedData`.
@@ -39,22 +41,27 @@ export type X402Authorization = {
   s: `0x${string}`
 }
 
-// Minimal ABI for EIP-5267 — most modern ERC-20 on Celo expose this.
-const EIP5267_ABI = [
+// IMPORTANT: we resolve the EIP-712 domain the same way the backend verifier
+// does — reading `name()` and `version()` directly from the token contract.
+// An earlier attempt used `eip712Domain()` (EIP-5267) with hard-coded string
+// fallbacks, but some Celo stablecoin deployments omit EIP-5267 and the
+// fallback names (e.g. "Celo Dollar") don't match what the token actually
+// publishes — the recovered signer then ends up being a different address,
+// failing `preValidateX402`.
+const NAME_VERSION_ABI = [
   {
     type: 'function',
-    name: 'eip712Domain',
+    name: 'name',
     stateMutability: 'view',
     inputs: [],
-    outputs: [
-      { name: 'fields', type: 'bytes1' },
-      { name: 'name', type: 'string' },
-      { name: 'version', type: 'string' },
-      { name: 'chainId', type: 'uint256' },
-      { name: 'verifyingContract', type: 'address' },
-      { name: 'salt', type: 'bytes32' },
-      { name: 'extensions', type: 'uint256[]' },
-    ],
+    outputs: [{ type: 'string' }],
+  },
+  {
+    type: 'function',
+    name: 'version',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ type: 'string' }],
   },
 ] as const
 
@@ -70,34 +77,23 @@ async function readDomain(
   tokenAddr: `0x${string}`,
   chainId: number,
 ): Promise<Domain> {
-  try {
-    const res = await publicClient.readContract({
-      address: tokenAddr,
-      abi: EIP5267_ABI,
-      functionName: 'eip712Domain',
-    })
-    // viem decodes tuple outputs as a typed tuple; positional access works.
-    const name = res[1]
-    const version = res[2]
-    const verifyingContract = res[4] as `0x${string}`
-    return { name, version, chainId, verifyingContract }
-  } catch {
-    // Known Celo stablecoin fallbacks. Keep in sync with features/pay/helpers.ts.
-    const lower = tokenAddr.toLowerCase()
-    if (
-      lower === '0xde9e4c3ce781b4ba68120d6261cbad65ce0ab00b' ||
-      lower === '0x765de816845861e75a25fca122bb6898b8b1282a'
-    ) {
-      return { name: 'Celo Dollar', version: '1', chainId, verifyingContract: tokenAddr }
-    }
-    if (
-      lower === '0xd077a400968890eacc75cdc901f0356c943e4fdb' ||
-      lower === '0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e'
-    ) {
-      return { name: 'Tether USD', version: '1', chainId, verifyingContract: tokenAddr }
-    }
-    throw new Error('Token does not expose EIP-712 domain for x402 signing')
+  const [nameRes, versionRes] = await publicClient.multicall({
+    allowFailure: true,
+    contracts: [
+      { address: tokenAddr, abi: NAME_VERSION_ABI, functionName: 'name' },
+      { address: tokenAddr, abi: NAME_VERSION_ABI, functionName: 'version' },
+    ],
+  })
+  if (nameRes.status !== 'success') {
+    throw new Error(
+      `Token ${tokenAddr} does not expose name() — cannot sign x402 authorization`,
+    )
   }
+  const name = nameRes.result as string
+  // EIP-3009 tokens without an explicit `version()` conventionally use "1".
+  // Backend applies the same default, so the two must agree.
+  const version = versionRes.status === 'success' ? (versionRes.result as string) : '1'
+  return { name, version, chainId, verifyingContract: tokenAddr }
 }
 
 function randomNonce(): `0x${string}` {
