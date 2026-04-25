@@ -4,6 +4,7 @@ export type Invoice = {
   totalAmount: bigint
   totalCollected: bigint
   dueDate: bigint
+  createdAt: bigint
   status: number
   role: 'sent' | 'received'
 }
@@ -16,6 +17,7 @@ export type ActivityItem = {
   counterparty: `0x${string}`
   amount: bigint
   direction: 'in' | 'out'
+  status: number
   statusLabel: string
   tone: Tone
   icon: 'invoice' | 'receipt' | 'pending'

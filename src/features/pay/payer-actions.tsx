@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { useVaultDeposit } from '@/hooks/mutation/use-vault-deposit'
 import { InvoiceVaultAbi } from '@/lib/abis/invoice-vault-abi'
 import { formatAmount } from '@/lib/format'
+import { useInvalidateAll } from '@/lib/utils/invalidate-queries'
 
 import { asInput, parseInput, tokenDecimals } from './helpers'
 import { X402PayButton } from './x402-pay-button'
@@ -28,6 +29,7 @@ export function PayerActions({
   onDone: () => void
 }) {
   const { address: me } = useConnection()
+  const invalidateAll = useInvalidateAll()
   const [input, setInput] = useState<string>('')
   const [confirmingDecline, setConfirmingDecline] = useState(false)
   const { status, mutation } = useVaultDeposit()
@@ -54,6 +56,7 @@ export function PayerActions({
   useEffect(() => {
     if (declined) {
       toast.success('Invoice declined \u2713')
+      invalidateAll()
       setConfirmingDecline(false)
       onDone()
     }

@@ -185,7 +185,7 @@ export function AgentForm() {
       <CardContent className="flex flex-col gap-3 px-5 py-5">
         <div className="flex items-center gap-2">
           <Bot size={18} className="text-[var(--lagoon-deep)]" />
-          <h3 className="m-0 text-base font-semibold text-[var(--sea-ink)]">PayLink AI agent</h3>
+          <h3 className="m-0 text-base font-semibold text-[var(--sea-ink)]">PayMe AI agent</h3>
         </div>
         <p className="m-0 -mt-2 text-sm text-[var(--sea-ink-soft)]">
           Describe the invoice in natural language. I’ll draft it and submit on-chain after you confirm in your wallet.

@@ -17,6 +17,6 @@ export function detectMiniPay(): boolean {
 }
 
 export function miniPayDeepLink(payUrl: string): string {
-  // Custom scheme opens PayLink inside MiniPay if the user has MiniPay installed.
+  // Custom scheme opens PayMe inside MiniPay if the user has MiniPay installed.
   return `https://minipay.opera.com/open?url=${encodeURIComponent(payUrl)}`
 }

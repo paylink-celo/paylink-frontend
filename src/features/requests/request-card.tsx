@@ -8,6 +8,7 @@ import { AlertTriangle, ArrowRight, Calendar, CheckCircle2, XCircle } from 'luci
 
 import { InvoiceFactoryAbi } from '@/lib/abis/factory-abi'
 import { formatAmount, truncateAddress } from '@/lib/format'
+import { useInvalidateAll } from '@/lib/utils/invalidate-queries'
 import { tokenLabel } from '@/features/pay/helpers'
 
 import { avatarToneFor, displayNameFor } from './helpers'
@@ -28,6 +29,7 @@ export function RequestCard({
   onDismiss: (id: string) => void
 }) {
   const navigate = useNavigate()
+  const invalidateAll = useInvalidateAll()
 
   // UI state — the card expands inline to capture additional input
   // (due date for confirm, reason for reject) before sending the tx.
@@ -57,6 +59,7 @@ export function RequestCard({
         if (decoded.eventName === 'InvoiceCreated') {
           const vault = (decoded.args as unknown as { vaultAddress: `0x${string}` }).vaultAddress
           toast.success('Request accepted \u2713 \u2014 payment account created.')
+          invalidateAll()
           setTimeout(() => navigate({ to: '/pay/$vault', params: { vault } }), 300)
           return
         }
@@ -71,6 +74,7 @@ export function RequestCard({
   useEffect(() => {
     if (!receipt || receipt.status !== 'success' || phase !== 'rejecting') return
     toast.success('Request rejected \u2713')
+    invalidateAll()
     onDismiss(req.requestId)
     setPhase('idle')
     reset()
@@ -96,7 +100,7 @@ export function RequestCard({
       abi: InvoiceFactoryAbi as Abi,
       address: factory,
       functionName: 'confirmInvoiceRequest',
-      args: [req.requestId, cUSD, BigInt(Math.floor(Date.parse(due) / 1000)), note || 'paylink://pull'],
+      args: [req.requestId, cUSD, BigInt(Math.floor(Date.parse(due) / 1000)), note || 'payme://pull'],
     })
   }
 

@@ -35,13 +35,14 @@ export function useInvoices(): {
         totalAmount: BigInt(inv.totalAmount),
         totalCollected: BigInt(inv.totalCollected),
         dueDate: BigInt(inv.dueDate),
+        createdAt: BigInt(inv.createdAt ?? inv.dueDate),
         status: statusFromSubgraph(inv.status),
         role,
       })
     }
     for (const inv of sgData.sent) push('sent', inv.vault.toLowerCase(), inv)
     for (const inv of sgData.received) push('received', inv.vault.toLowerCase(), inv)
-    rows.sort((a, b) => Number(b.dueDate - a.dueDate))
+    rows.sort((a, b) => Number(b.createdAt - a.createdAt))
     return rows
   }, [sgData])
 

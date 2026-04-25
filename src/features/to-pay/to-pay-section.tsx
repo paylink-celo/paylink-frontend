@@ -33,8 +33,10 @@ export function ToPaySection() {
         </span>
       </header>
       <div className="grid gap-3">
-        {items.map((it) => (
-          <ToPayRow key={it.vault} item={it} />
+        {items.map((it, i) => (
+          <div key={it.vault} className="stagger-item" style={{ animationDelay: `${i * 60}ms` }}>
+            <ToPayRow item={it} />
+          </div>
         ))}
       </div>
     </section>

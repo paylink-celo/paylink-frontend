@@ -7,6 +7,7 @@ const INVOICE_FIELDS = /* GraphQL */ `
     totalAmount
     totalCollected
     dueDate
+    createdAt
     status
     metadataURI
     isOpenPayment

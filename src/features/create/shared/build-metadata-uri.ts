@@ -11,11 +11,11 @@ export async function buildMetadataURI(input: {
   dueDateIso?: string
   extra?: Record<string, unknown>
 }): Promise<string> {
-  const fallback = input.note?.trim() || `paylink://${input.flow}`
+  const fallback = input.note?.trim() || `payme://${input.flow}`
   if (!hasBackend()) return fallback
   try {
     const pinned = await pinMetadata({
-      title: input.note?.slice(0, 60) || `PayLink ${input.flow} invoice`,
+      title: input.note?.slice(0, 60) || `PayMe ${input.flow} invoice`,
       note: input.note || undefined,
       tags: [input.flow, input.token],
       extra: {

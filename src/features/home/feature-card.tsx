@@ -27,7 +27,7 @@ export function FeatureCard({
     <button
       type="button"
       onClick={onClick}
-      className="island-shell feature-card rise-in h-[7.75rem] w-full rounded-3xl p-4 text-left transition-transform active:scale-[0.98] sm:h-auto sm:p-5"
+      className="island-shell feature-card rise-in press-scale h-[7.75rem] w-full rounded-3xl p-4 text-left sm:h-auto sm:p-5"
     >
       {deco && (
         <img

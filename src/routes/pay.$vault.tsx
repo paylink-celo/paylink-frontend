@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import { PageHeader } from '@/components/page-header'
 import { hasBackend } from '@/lib/api'
 
 import { ActionPanel } from '@/features/pay/action-panel'
@@ -20,7 +21,8 @@ function PayPage() {
   const isCreator = Boolean(me && me === invoice.creator)
 
   return (
-    <div className="page-wrap pb-16 pt-6">
+    <div className="page-enter page-wrap pb-16 pt-3">
+      <PageHeader title="Invoice Details" />
       <InvoiceHeader
         creator={invoice.creator}
         tokenAddr={invoice.tokenAddr}

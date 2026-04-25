@@ -11,7 +11,7 @@ import { FeatureCard } from './feature-card'
 export function FeatureGrid() {
   const navigate = useNavigate()
   return (
-    <section className="grid grid-cols-2 gap-3">
+    <section className="grid grid-cols-2 gap-3" style={{ animationDelay: '200ms' }}>
       <FeatureCard
         icon={<UserGroupIcon className="size-5" />}
         iconBg="bg-[var(--lagoon-soft)]"

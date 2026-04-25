@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { InvoiceVaultAbi } from '@/lib/abis/invoice-vault-abi'
 import { txExplorerUrl } from '@/lib/chains'
 import { isUserRejectedError } from '@/lib/utils/error.utils'
+import { useInvalidateAll } from '@/lib/utils/invalidate-queries'
 import { waitForTxReceipt } from '@/lib/utils/wait-for-tx'
 import type { HexAddress, TxStatus } from '@/lib/utils/tx-types'
 import { config } from '@/lib/wagmi'
@@ -20,6 +21,7 @@ interface DepositParams {
 
 export function useVaultDeposit() {
   const { address } = useConnection()
+  const invalidateAll = useInvalidateAll()
 
   const [status, setStatus] = useState<TxStatus>('idle')
   const [txHash, setTxHash] = useState<HexAddress | null>(null)
@@ -73,6 +75,7 @@ export function useVaultDeposit() {
       })
 
       setStatus('success')
+      invalidateAll()
       return receipt
     },
     onError(e) {

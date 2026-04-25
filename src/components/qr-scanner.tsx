@@ -98,7 +98,7 @@ export function QrScanner({
             </p>
           ) : (
             <p className="m-0 text-xs text-[var(--sea-ink-soft)]">
-              Point your camera at a PayLink QR, an `ethereum:` address, or a shared wallet QR.
+              Point your camera at a PayMe QR, an `ethereum:` address, or a shared wallet QR.
             </p>
           )}
         </div>

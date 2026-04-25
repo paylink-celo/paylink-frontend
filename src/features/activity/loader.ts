@@ -72,10 +72,11 @@ export async function loadInvoicesOnChain(
       totalAmount,
       totalCollected: totalCollected ?? 0n,
       dueDate: dueDate ?? 0n,
+      createdAt: dueDate ?? 0n,
       status: statusVal,
       role: creator.toLowerCase() === me.toLowerCase() ? 'sent' : 'received',
     })
   }
-  out.sort((a, b) => Number(b.dueDate - a.dueDate))
+  out.sort((a, b) => Number(b.createdAt - a.createdAt))
   return out
 }

@@ -14,6 +14,7 @@ import {
 import type { ComponentType, SVGProps } from 'react'
 
 import { useMyToPay } from '@/hooks/graphql/use-my-to-pay'
+import { useInvoiceRequestsByUser } from '@/hooks/graphql/use-invoice-requests-by-user'
 import { urgencyDotClass } from '@/features/to-pay/urgency'
 
 type NavIcon = ComponentType<SVGProps<SVGSVGElement>>
@@ -26,7 +27,7 @@ const navItems: Array<{
 }> = [
   { label: 'Home', to: '/', Icon: HomeIcon, IconActive: HomeIconSolid },
   { label: 'Create', to: '/create', Icon: DocumentPlusIcon, IconActive: DocumentPlusIconSolid },
-  { label: 'Activity', to: '/activity', Icon: ChartBarIcon, IconActive: ChartBarIconSolid },
+  { label: 'Invoices', to: '/activity', Icon: ChartBarIcon, IconActive: ChartBarIconSolid },
   { label: 'Requests', to: '/requests', Icon: InboxIcon, IconActive: InboxIconSolid },
 ]
 
@@ -35,8 +36,22 @@ export function BottomNavbar() {
   const { count, overdueCount } = useMyToPay()
   const badgeUrgency = overdueCount > 0 ? 'overdue' : count > 0 ? 'dueSoon' : 'future'
 
+  // Requests badge: pending incoming + outgoing accepted-but-unpaid
+  const { data: requestsData } = useInvoiceRequestsByUser()
+  const pendingIncoming = (requestsData?.incoming ?? []).filter(
+    (r) => !r.fulfilled && !r.rejected,
+  ).length
+  const actionNeededOutgoing = (requestsData?.outgoing ?? []).filter(
+    (r) => {
+      if (!r.fulfilledInvoice) return false
+      const s = r.fulfilledInvoice.status
+      return s === 'PENDING' || s === 'PARTIAL'
+    },
+  ).length
+  const pendingRequestCount = pendingIncoming + actionNeededOutgoing
+
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[var(--header-bg)] backdrop-blur-md border-t border-[var(--line)] z-50">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[var(--header-bg)] backdrop-blur-xl border-t border-[var(--line)] z-50 shadow-[0_-4px_24px_rgba(30,90,72,0.06)]">
       <div className="flex items-stretch justify-around h-16 px-2">
         {navItems.map(({ label, to, Icon, IconActive }) => {
           const isActive =
@@ -46,9 +61,18 @@ export function BottomNavbar() {
 
           const ActiveOrIdle = isActive ? IconActive : Icon
 
-          // The "bills to pay" count surfaces on the Activity tab since that's
-          // where the full obligations list lives.
-          const badge = to === '/activity' && count > 0 ? count : 0
+          // Badge per tab
+          const badge =
+            to === '/activity' && count > 0
+              ? count
+              : to === '/requests' && pendingRequestCount > 0
+                ? pendingRequestCount
+                : 0
+
+          const badgeClass =
+            to === '/requests'
+              ? 'bg-[var(--lagoon)]'
+              : urgencyDotClass(badgeUrgency)
 
           return (
             <Link
@@ -66,7 +90,7 @@ export function BottomNavbar() {
                 <ActiveOrIdle className="size-[22px]" />
                 {badge > 0 && (
                   <span
-                    className={`absolute -top-1 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white ${urgencyDotClass(badgeUrgency)}`}
+                    className={`absolute -top-1 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white ${badgeClass}`}
                   >
                     {badge > 9 ? '9+' : badge}
                   </span>

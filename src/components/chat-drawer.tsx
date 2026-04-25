@@ -24,7 +24,7 @@ import {
 } from '@/features/create/shared/draft-to-create-args'
 
 /**
- * PayLink chat drawer.
+ * PayMe chat drawer.
  *
  * Three message kinds:
  *  - plain text (user or assistant)
@@ -252,7 +252,7 @@ export default function ChatDrawer() {
         >
           <header className="mb-3 flex items-center justify-between">
             <div>
-              <p className="island-kicker m-0">PayLink copilot</p>
+              <p className="island-kicker m-0">PayMe copilot</p>
               <h3 className="m-0 text-base font-semibold text-[var(--sea-ink)]">
                 Ask or draft an invoice
               </h3>
@@ -306,7 +306,7 @@ export default function ChatDrawer() {
           <form className="mt-3 flex gap-2" onSubmit={submit}>
             <input
               className="input flex-1"
-              placeholder="Ask PayLink or describe an invoice&hellip;"
+              placeholder="Ask PayMe or describe an invoice&hellip;"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={busy}

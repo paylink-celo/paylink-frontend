@@ -28,7 +28,7 @@ function CreatePage() {
   const [tab, setTab] = useState<Tab>(initialDraft?.mode ?? search.tab ?? 'push')
 
   return (
-    <div className="page-wrap pb-24 pt-6">
+    <div className="page-enter page-wrap pb-24 pt-6">
       <CreateHeader />
       <CreateTabs active={tab} onChange={setTab} />
       <CreatePanel tab={tab} aiDraft={initialDraft} />

@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import {
   ArrowDownTrayIcon,
+  Cog6ToothIcon,
   PaperAirplaneIcon,
   QrCodeIcon,
 } from '@heroicons/react/24/outline'
@@ -28,6 +29,11 @@ export function ActionRow() {
         onClick={() => {
           /* future: global QR scanner */
         }}
+      />
+      <ActionButton
+        icon={<Cog6ToothIcon className="size-[22px] text-[var(--lagoon-deep)]" />}
+        label="Settings"
+        onClick={() => navigate({ to: '/settings' })}
       />
     </section>
   )

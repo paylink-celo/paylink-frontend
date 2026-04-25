@@ -8,6 +8,7 @@ export type SgInvoice = {
   totalAmount: string
   totalCollected: string
   dueDate: string
+  createdAt: string
   status:
     | 'PENDING'
     | 'PARTIAL'

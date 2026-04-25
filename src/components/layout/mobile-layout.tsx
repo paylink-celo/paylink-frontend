@@ -1,6 +1,5 @@
 import { Outlet } from "@tanstack/react-router";
 import { BottomNavbar } from "./bottom-navbar";
-import ChatDrawer from "@/components/chat-drawer";
 
 export function MobileLayout() {
   return (
@@ -9,7 +8,6 @@ export function MobileLayout() {
         <Outlet />
       </main>
       <BottomNavbar />
-      <ChatDrawer />
     </>
   );
 }

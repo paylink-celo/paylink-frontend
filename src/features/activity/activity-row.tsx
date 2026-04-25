@@ -16,7 +16,7 @@ export function ActivityRow({ item }: { item: ActivityItem }) {
     <Link
       to="/pay/$vault"
       params={{ vault: item.vault }}
-      className="activity-row no-underline text-inherit"
+      className="activity-row press-scale no-underline text-inherit"
     >
       <ActivityIcon kind={item.icon} tone={item.tone} />
       <div className="min-w-0 flex-1">

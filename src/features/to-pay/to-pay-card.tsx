@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react'
 
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatAmount, truncateAddress } from '@/lib/format'
 import { TOKEN_DECIMALS } from '@/hooks/balance/use-token-balance'
 import { useMyToPay, type ToPayItem } from '@/hooks/graphql/use-my-to-pay'
@@ -23,7 +24,21 @@ export function ToPayCard() {
   const { items, count, overdueCount, totalsByToken, isLoading } = useMyToPay()
 
   if (isLoading) {
-    return <section className="island-shell mb-6 rounded-2xl p-5 text-sm text-[var(--sea-ink-soft)]">Checking your bills…</section>
+    return (
+      <section className="island-shell mb-6 rounded-2xl p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <Skeleton className="h-9 w-9 rounded-full" />
+          <div>
+            <Skeleton className="h-3 w-16 rounded" />
+            <Skeleton className="mt-1.5 h-4 w-32 rounded" />
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-xl" />
+        </div>
+      </section>
+    )
   }
 
   if (count === 0) {

@@ -9,12 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RequestsRouteImport } from './routes/requests'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings.index'
+import { Route as SettingsHowToUseRouteImport } from './routes/settings.how-to-use'
+import { Route as SettingsAnalyticsRouteImport } from './routes/settings.analytics'
 import { Route as PayVaultRouteImport } from './routes/pay.$vault'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RequestsRoute = RequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
@@ -35,6 +44,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsHowToUseRoute = SettingsHowToUseRouteImport.update({
+  id: '/how-to-use',
+  path: '/how-to-use',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsAnalyticsRoute = SettingsAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => SettingsRoute,
+} as any)
 const PayVaultRoute = PayVaultRouteImport.update({
   id: '/pay/$vault',
   path: '/pay/$vault',
@@ -46,7 +70,11 @@ export interface FileRoutesByFullPath {
   '/activity': typeof ActivityRoute
   '/create': typeof CreateRoute
   '/requests': typeof RequestsRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/pay/$vault': typeof PayVaultRoute
+  '/settings/analytics': typeof SettingsAnalyticsRoute
+  '/settings/how-to-use': typeof SettingsHowToUseRoute
+  '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +82,9 @@ export interface FileRoutesByTo {
   '/create': typeof CreateRoute
   '/requests': typeof RequestsRoute
   '/pay/$vault': typeof PayVaultRoute
+  '/settings/analytics': typeof SettingsAnalyticsRoute
+  '/settings/how-to-use': typeof SettingsHowToUseRoute
+  '/settings': typeof SettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,14 +92,45 @@ export interface FileRoutesById {
   '/activity': typeof ActivityRoute
   '/create': typeof CreateRoute
   '/requests': typeof RequestsRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/pay/$vault': typeof PayVaultRoute
+  '/settings/analytics': typeof SettingsAnalyticsRoute
+  '/settings/how-to-use': typeof SettingsHowToUseRoute
+  '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/activity' | '/create' | '/requests' | '/pay/$vault'
+  fullPaths:
+    | '/'
+    | '/activity'
+    | '/create'
+    | '/requests'
+    | '/settings'
+    | '/pay/$vault'
+    | '/settings/analytics'
+    | '/settings/how-to-use'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/activity' | '/create' | '/requests' | '/pay/$vault'
-  id: '__root__' | '/' | '/activity' | '/create' | '/requests' | '/pay/$vault'
+  to:
+    | '/'
+    | '/activity'
+    | '/create'
+    | '/requests'
+    | '/pay/$vault'
+    | '/settings/analytics'
+    | '/settings/how-to-use'
+    | '/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/activity'
+    | '/create'
+    | '/requests'
+    | '/settings'
+    | '/pay/$vault'
+    | '/settings/analytics'
+    | '/settings/how-to-use'
+    | '/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,11 +138,19 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   CreateRoute: typeof CreateRoute
   RequestsRoute: typeof RequestsRoute
+  SettingsRoute: typeof SettingsRouteWithChildren
   PayVaultRoute: typeof PayVaultRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/requests': {
       id: '/requests'
       path: '/requests'
@@ -109,6 +179,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/': {
+      id: '/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/how-to-use': {
+      id: '/settings/how-to-use'
+      path: '/how-to-use'
+      fullPath: '/settings/how-to-use'
+      preLoaderRoute: typeof SettingsHowToUseRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/analytics': {
+      id: '/settings/analytics'
+      path: '/analytics'
+      fullPath: '/settings/analytics'
+      preLoaderRoute: typeof SettingsAnalyticsRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/pay/$vault': {
       id: '/pay/$vault'
       path: '/pay/$vault'
@@ -119,11 +210,28 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SettingsRouteChildren {
+  SettingsAnalyticsRoute: typeof SettingsAnalyticsRoute
+  SettingsHowToUseRoute: typeof SettingsHowToUseRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsAnalyticsRoute: SettingsAnalyticsRoute,
+  SettingsHowToUseRoute: SettingsHowToUseRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
   CreateRoute: CreateRoute,
   RequestsRoute: RequestsRoute,
+  SettingsRoute: SettingsRouteWithChildren,
   PayVaultRoute: PayVaultRoute,
 }
 export const routeTree = rootRouteImport

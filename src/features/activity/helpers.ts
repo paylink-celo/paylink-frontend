@@ -2,7 +2,7 @@ import type { ActivityItem, Invoice, Tone } from './types'
 
 export function toActivityItem(inv: Invoice): ActivityItem {
   const direction: 'in' | 'out' = inv.role === 'sent' ? 'in' : 'out'
-  const { label, tone } = describeStatus(inv.status)
+  const { label, tone } = describeStatus(inv.status, inv.role)
   const amount = direction === 'in' ? inv.totalCollected || inv.totalAmount : inv.totalAmount
   return {
     vault: inv.vault,
@@ -10,6 +10,7 @@ export function toActivityItem(inv: Invoice): ActivityItem {
     counterparty: inv.creator,
     amount,
     direction,
+    status: inv.status,
     statusLabel: label,
     tone,
     icon: iconForStatus(inv.status),
@@ -21,11 +22,14 @@ function titleForInvoice(inv: Invoice): string {
   return `Invoice #${id} \u2014 ${inv.role === 'sent' ? 'Incoming' : 'Outgoing'}`
 }
 
-export function describeStatus(status: number): { label: string; tone: Tone } {
+export function describeStatus(status: number, role?: 'sent' | 'received'): { label: string; tone: Tone } {
   switch (status) {
-    case 2: // Funded
-    case 3: // Settled
-      return { label: 'PAID', tone: 'success' }
+    case 2: // Funded — paid but not yet released
+      return role === 'sent'
+        ? { label: 'RELEASE', tone: 'warning' }
+        : { label: 'PAID', tone: 'success' }
+    case 3: // Settled — released
+      return { label: 'SETTLED', tone: 'success' }
     case 1: // Partial
       return { label: 'PARTIAL', tone: 'success' }
     case 0: // Pending

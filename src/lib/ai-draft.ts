@@ -1,6 +1,6 @@
 import type { AiDraft } from './api'
 
-const KEY = 'paylink.ai-draft.v1'
+const KEY = 'payme.ai-draft.v1'
 
 export function saveDraft(draft: AiDraft): void {
   try {

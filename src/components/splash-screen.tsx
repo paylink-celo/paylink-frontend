@@ -4,7 +4,7 @@ interface SplashScreenProps {
   isReady: boolean
 }
 
-const SPLASH_KEY = 'paylink-splash-shown'
+const SPLASH_KEY = 'payme-splash-shown'
 
 export function SplashScreen({ isReady }: SplashScreenProps) {
   const alreadyShown = sessionStorage.getItem(SPLASH_KEY) === '1'
@@ -34,13 +34,14 @@ export function SplashScreen({ isReady }: SplashScreenProps) {
         fadeOut ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      {/* PayLink branding */}
+      {/* PayMe branding */}
       <img
-        src="/paylink-light.png"
-        alt="PayLink"
+        src="/payme-logo.png"
+        alt="PayMe"
         className="h-20 w-auto object-contain drop-shadow-[0_6px_18px_rgba(30,90,72,0.18)] rounded-full"
       />
-      <p className="mt-3 text-xs text-(--sea-ink-soft)">On-chain billing for MiniPay</p>
+      <h1 className="mt-4 text-2xl font-bold text-(--sea-ink) display-title tracking-tight">PayMe</h1>
+      <p className="mt-1 text-xs text-(--sea-ink-soft)">On-chain billing for MiniPay</p>
 
       {/* Loading indicator */}
       <div className="mt-8 flex flex-col items-center gap-3">

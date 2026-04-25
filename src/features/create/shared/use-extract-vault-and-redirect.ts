@@ -3,6 +3,7 @@ import { decodeEventLog } from 'viem'
 import { toast } from 'sonner'
 
 import { InvoiceFactoryAbi } from '@/lib/abis/factory-abi'
+import { useInvalidateAll } from '@/lib/utils/invalidate-queries'
 
 type Receipt =
   | {
@@ -15,6 +16,8 @@ export function useExtractVaultAndRedirect(
   receipt: Receipt,
   navigate: ReturnType<typeof useNavigate>,
 ) {
+  const invalidateAll = useInvalidateAll()
+
   if (!receipt || receipt.status !== 'success') return
   for (const log of receipt.logs) {
     try {
@@ -26,6 +29,7 @@ export function useExtractVaultAndRedirect(
       if (decoded.eventName === 'InvoiceCreated') {
         const vault = (decoded.args as { vaultAddress: `0x${string}` }).vaultAddress
         toast.success('Invoice created \u2713')
+        invalidateAll()
         setTimeout(() => navigate({ to: '/pay/$vault', params: { vault } }), 300)
         return
       }

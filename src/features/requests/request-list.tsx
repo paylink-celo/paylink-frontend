@@ -147,18 +147,20 @@ export function RequestList() {
                 ? 'Accepted requests will appear here. The ones you still need to pay are flagged.'
                 : 'Rejected incoming requests will appear here.'
           }
+          illustration="requests"
         />
       )}
 
       <div className="grid gap-4">
-        {activeList.map((r) => (
-          <RequestCard
-            key={r.requestId}
-            req={r}
-            factory={addrs.factory as `0x${string}`}
-            cUSD={addrs.cUSD as `0x${string}`}
-            onDismiss={(id) => setDismissed((s) => new Set(s).add(id))}
-          />
+        {activeList.map((r, i) => (
+          <div key={r.requestId} className="stagger-item" style={{ animationDelay: `${i * 60}ms` }}>
+            <RequestCard
+              req={r}
+              factory={addrs.factory as `0x${string}`}
+              cUSD={addrs.cUSD as `0x${string}`}
+              onDismiss={(id) => setDismissed((s) => new Set(s).add(id))}
+            />
+          </div>
         ))}
       </div>
     </>

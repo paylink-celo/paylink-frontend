@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { Skeleton } from '@/components/ui/skeleton'
 import { TokenSelector } from '@/components/token-selector'
 import {
   useUserTokenBalance,
@@ -21,6 +22,8 @@ export function BalanceSummary() {
   const cusd = useUserTokenBalance('cUSD', TOKEN_DECIMALS.cUSD)
   const usdt = useUserTokenBalance('USDT', TOKEN_DECIMALS.USDT)
 
+  const isLoading = cusd.tokenBalanceLoading || usdt.tokenBalanceLoading
+
   const balances: Record<TokenOption, number> = {
     cUSD: cusd.userTokenBalanceParsed,
     USDT: usdt.userTokenBalanceParsed,
@@ -37,9 +40,13 @@ export function BalanceSummary() {
       <div className="balance-card__inner">
         <p className="balance-kicker mb-2">Total Balance</p>
         <div className="flex flex-col items-center justify-center gap-2">
-          <span className="balance-amount">
-            {formatAmount(balances[token])}
-          </span>
+          {isLoading ? (
+            <Skeleton className="h-11 w-40 rounded-lg bg-white/20" />
+          ) : (
+            <span className="balance-amount">
+              {formatAmount(balances[token])}
+            </span>
+          )}
           <TokenSelector
             value={token}
             onChange={setToken}

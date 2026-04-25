@@ -30,9 +30,9 @@ export function RecentActivity() {
         </Link>
       </div>
 
-      {!address && <EmptyCard title="Getting ready" body="Connecting to your MiniPay wallet…" />}
+      {!address && <EmptyCard title="Getting ready" body="Connecting to your MiniPay wallet…" illustration="wallet" />}
       {address && !factory && (
-        <EmptyCard title="Not available yet" body="PayLink is being set up. Please try again later." />
+        <EmptyCard title="Not available yet" body="PayMe is being set up. Please try again later." illustration="wallet" />
       )}
 
       {address && loading && (
@@ -51,8 +51,10 @@ export function RecentActivity() {
 
       {!loading && items.length > 0 && (
         <div className="grid gap-3">
-          {items.map((it) => (
-            <ActivityRow key={it.vault} item={it} />
+          {items.map((it, i) => (
+            <div key={it.vault} className="stagger-item" style={{ animationDelay: `${i * 60}ms` }}>
+              <ActivityRow item={it} />
+            </div>
           ))}
         </div>
       )}
@@ -61,6 +63,7 @@ export function RecentActivity() {
         <EmptyCard
           title="No activity yet"
           body="Your incoming and outgoing invoices will appear here."
+          illustration="activity"
         />
       )}
     </section>
